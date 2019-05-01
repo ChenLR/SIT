@@ -404,6 +404,41 @@
               <FileType>1</FileType>
               <FilePath>.\Src\usart.c</FilePath>
             </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\rtc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Include</GroupName>
+          <Files>
+            <File>
+              <FileName>delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\delay.h</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\i2c.h</FilePath>
+            </File>
+            <File>
+              <FileName>MS5803_I2C.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\MS5803_I2C.h</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\rtc.h</FilePath>
+            </File>
+            <File>
+              <FileName>usart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\usart.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

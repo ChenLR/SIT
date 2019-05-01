@@ -123,6 +123,17 @@ void i2c_read(uint8_t address, uint8_t* data)
 	i2c_stop();
 }
 
+void i2c_write_bytes(uint8_t address, uint8_t* data, uint8_t num)
+{
+	uint8_t i;
+	i2c_start();
+	i2c_address_direction(address << 1, I2C_Direction_Transmitter);
+	for(i = 0; i < num; i++) {
+		i2c_transmit(data[i]);
+	}
+	i2c_stop();
+}
+
 void i2c_read_bytes(uint8_t address, uint8_t* data, uint8_t num)
 {
 	uint8_t i;
