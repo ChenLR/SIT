@@ -1,15 +1,15 @@
 /******************************************************************************
-MS5803_I2C.h
-Library for MS5803 pressure sensors.
+ms5803.h
+Library for ms5803 pressure sensors.
 Casey Kuhns @ SparkFun Electronics
 6/26/2014
-https://github.com/sparkfun/MS5803-14BA_Breakout
+https://github.com/sparkfun/ms5803-14BA_Breakout
 
 The MS58XX MS57XX and MS56XX by Measurement Specialties is a low cost I2C pressure
 sensor.  This sensor can be used in weather stations and for altitude
 estimations. It can also be used underwater for water depth measurements. 
 
-In this file are the function prototypes in the MS5803 class 
+In this file are the function prototypes in the ms5803 class 
 
 Resources:
 This library uses the Arduino Wire.h to complete I2C transactions.
@@ -17,7 +17,7 @@ This library uses the Arduino Wire.h to complete I2C transactions.
 Development environment specifics:
 	IDE: Arduino 1.0.5
 	Hardware Platform: Arduino Pro 3.3V/8MHz
-	MS5803 Breakout Version: 1.0
+	ms5803 Breakout Version: 1.0
 
 **Updated for Arduino 1.6.4 5/2015**
 
@@ -27,8 +27,8 @@ local pub, and you've found our code helpful, please buy us a round!
 Distributed as-is; no warranty is given.
 ******************************************************************************/
 
-#ifndef __MS5803_I2C_h
-#define __MS5803_I2C_h
+#ifndef __ms5803_H
+#define __ms5803_H
 
 #include "stm32f10x.h"
 
@@ -72,17 +72,17 @@ enum ms5803_addr
 #define CMD_PROM 0xA0 // Coefficient location
 
 
-// class MS5803
+// class ms5803
 
-void MS5803_Init(enum ms5803_addr address); 
-void MS5803_Reset(void);	 //Reset device
-uint8_t MS5803_Begin(void); // Collect coefficients from sensor
+void ms5803_Init(enum ms5803_addr address); 
+void ms5803_Reset(void);	 //Reset device
+uint8_t ms5803_Begin(void); // Collect coefficients from sensor
 
 // Return calculated temperature from sensor
-float MS5803_GetTemperature(enum temperature_units units, enum precision _precision);
+float ms5803_GetTemperature(enum temperature_units units, enum precision _precision);
 // Return calculated pressure from sensor
-float MS5803_GetPressure(enum precision _precision);
-
-void MS5803_GetMeasurements(enum precision _precision);
+float ms5803_GetPressure(enum precision _precision);
+void ms5803_GetMeasurements(enum precision _precision);
+void ms5803_demo(void);
 
 #endif

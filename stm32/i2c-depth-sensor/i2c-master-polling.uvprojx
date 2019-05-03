@@ -132,12 +132,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <Capability>1</Capability>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -395,19 +395,19 @@
               <FilePath>.\Src\main.c</FilePath>
             </File>
             <File>
-              <FileName>MS5803_I2C.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\MS5803_I2C.c</FilePath>
-            </File>
-            <File>
               <FileName>usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\usart.c</FilePath>
             </File>
             <File>
-              <FileName>rtc.c</FileName>
+              <FileName>ds1307.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Src\rtc.c</FilePath>
+              <FilePath>.\Src\ds1307.c</FilePath>
+            </File>
+            <File>
+              <FileName>ms5803.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\ms5803.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -425,19 +425,19 @@
               <FilePath>.\Src\i2c.h</FilePath>
             </File>
             <File>
-              <FileName>MS5803_I2C.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\MS5803_I2C.h</FilePath>
-            </File>
-            <File>
-              <FileName>rtc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\rtc.h</FilePath>
-            </File>
-            <File>
               <FileName>usart.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Src\usart.h</FilePath>
+            </File>
+            <File>
+              <FileName>ds1307.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\ds1307.h</FilePath>
+            </File>
+            <File>
+              <FileName>ms5803.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\ms5803.h</FilePath>
             </File>
           </Files>
         </Group>
