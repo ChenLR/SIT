@@ -2,12 +2,25 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_usart.h"
 #include <string.h>
-#include <stdio.h>
 #include "usart.h"
+
+#pragma import(__use_no_semihosting)                             
+FILE __stdout;
 
 // Buffer for store received chars
 #define BUF_SIZE	16
-char buf[BUF_SIZE];
+static char buf[BUF_SIZE];
+
+_sys_exit(int x) 
+{ 
+    x = x; 
+}
+
+int fputc(int ch, FILE *f){      
+    while((USART2->SR&0X40)==0);
+    USART2->DR = (u8) ch;      
+    return ch;
+}
 
 void USART2_Init()
 {
@@ -63,29 +76,6 @@ void USART2_PutChar(char c)
 	USART_SendData(USART2, c);
 }
 
-void USART2_PutString(char *s)
-{
-	// Send a string
-	while (*s)
-	{
-		USART2_PutChar(*s++);
-	}
-}
-
-void USART2_PutInt(int32_t num)
-{
-  char buf[10]; 
-	sprintf(buf, "%d", num);
-	USART2_PutString(buf);
-}
-
-void USART2_PutFloat(float f)
-{
-  char buf[10]; 
-	sprintf(buf, "%f", f);
-	USART2_PutString(buf);
-}
-
 
 void USART2_IRQHandler()
 {
@@ -121,8 +111,7 @@ void USART2_IRQHandler()
 			// lcd16x2_puts(buf);
 			
 			// Echo received string to USART2
-			USART2_PutString(buf);
-			USART2_PutChar('\n');
+			printf("%s\n", buf);
 			
 			// Clear buffer
 			memset(&buf[0], 0, sizeof(buf));

@@ -470,36 +470,34 @@ uint8_t check_min_max(uint8_t val, uint8_t min, uint8_t max)
   ******************************************************************************
   */
 
+static uint8_t set_date_flag = 0;
+
 void ds1307_demo() {
 	uint8_t D, d, M, y, h, m, s;
-  static char buf[4];
-	// Set initial date and time 
-	//ds1307_set_calendar_date(DS1307_THRUSDAY, 2, 5, 19);
-	//ds1307_set_time_24(22, 30, 10);
+	// Set initial date and time
+	if (set_date_flag) {
+		set_date_flag = 0;
+	  ds1307_set_calendar_date(DS1307_FRIDAY, 3, 5, 19);
+	  ds1307_set_time_24(18, 59, 50);
+	}
 	// Get date and time
 		ds1307_get_calendar_date(&D, &d, &M, &y);
 		ds1307_get_time_24(&h, &m, &s);
 		
 		// Display date and time
 		
-		sprintf(buf, (d <= 9) ? "0%d" : "%d", d);
-		USART2_PutString(buf);
-		USART2_PutChar('/');
-		sprintf(buf, (M <= 9) ? "0%d" : "%d", M);
-		USART2_PutString(buf);
-		USART2_PutChar('/');
-		sprintf(buf, "20%d", y);
-		USART2_PutString(buf);
-		USART2_PutChar('-');
-		sprintf(buf, (h <= 9) ? "0%d" : "%d", h);
-		USART2_PutString(buf);
-		USART2_PutChar(':');
-		sprintf(buf, (m <= 9) ? "0%d" : "%d", m);
-		USART2_PutString(buf);
-		USART2_PutChar(':');
-		sprintf(buf, (s <= 9) ? "0%d" : "%d", s);
-		USART2_PutString(buf);
-		USART2_PutChar('\n');
+		printf((d <= 9) ? "0%d" : "%d", d);
+		printf("/");
+		printf((M <= 9) ? "0%d" : "%d", M);
+		printf("/");
+		printf("20%d", y);
+		printf("-");
+		printf((h <= 9) ? "0%d" : "%d", h);
+		printf(":");
+		printf((m <= 9) ? "0%d" : "%d", m);
+		printf(":");
+		printf((s <= 9) ? "0%d" : "%d", s);
+		printf("\n");
 }
 
 /********************************* END OF FILE ********************************/

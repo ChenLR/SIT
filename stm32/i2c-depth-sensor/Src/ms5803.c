@@ -237,10 +237,6 @@ void ms5803_demo() {
 	float temp, pres;
 	temp = ms5803_GetTemperature(CELSIUS, ADC_256);
 	pres = ms5803_GetPressure(ADC_4096);
-	USART2_PutString("temp:");
-	USART2_PutFloat(temp);
-	USART2_PutString("\n");
-	USART2_PutString("pressure:");
-	USART2_PutFloat(pres);
-	USART2_PutString("\n");
+	printf("temp:\t%.3f\n", temp);
+	printf("pressure:\t%.3f\n", pres);
 }
