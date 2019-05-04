@@ -7,6 +7,7 @@
 #include "i2c.h"
 #include "ms5803.h"
 #include "ds1307.h"
+#include "led_display.h"
 
 // PA2:		Tx
 // PA3:		Rx
@@ -14,12 +15,12 @@
 // PB11:	SDA
 
 
-
 void setup() {
 	DelayInit();
 	USART2_Init();
 	ds1307_init();
 	ms5803_Init(ADDRESS_HIGH);
+	led_7_seg_init();
 }
 
 
@@ -29,6 +30,7 @@ int main(void)
 	
 	while (1)
 	{
+		led_7_seg_demo();
 		ms5803_demo();
 		ds1307_demo();
 		DelayMs(2000);
