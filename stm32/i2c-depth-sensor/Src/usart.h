@@ -8,8 +8,10 @@ struct __FILE {
     int handle; 
 };
 
+void USART1_Init(void);
+
 void USART2_Init(void);
-void USART2_PutChar(char c);
+
 int fputc(int ch, FILE *f);
 
 #endif

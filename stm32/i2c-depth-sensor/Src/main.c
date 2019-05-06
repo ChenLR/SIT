@@ -9,15 +9,15 @@
 #include "ds1307.h"
 #include "led_display.h"
 
-// PA2:		Tx
-// PA3:		Rx
+// PA9:		Tx
+// PA10:	Rx
 // PB10:	SCL
 // PB11:	SDA
 
 
 void setup() {
 	DelayInit();
-	USART2_Init();
+	USART1_Init();
 	ds1307_init();
 	ms5803_Init(ADDRESS_HIGH);
 	led_7_seg_init();
