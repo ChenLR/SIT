@@ -8,6 +8,7 @@
 #include "ms5803.h"
 #include "ds1307.h"
 #include "led_display.h"
+#include "adc.h"
 
 // PA9:		Tx
 // PA10:	Rx
@@ -18,21 +19,25 @@
 void setup() {
 	DelayInit();
 	USART1_Init();
-	ds1307_init();
+	ADC1_Init();
+	//ds1307_init();
 	ms5803_Init(ADDRESS_HIGH);
-	led_7_seg_init();
+	//led_7_seg_init();
 }
 
 
 int main(void)
 {
+	float bat;
 	setup();
 	
 	while (1)
 	{
-		led_7_seg_demo();
+		//led_7_seg_demo();
 		ms5803_demo();
-		ds1307_demo();
+		bat = ADC1_ReadBattery();
+		printf("%f\n", bat);
+		//ds1307_demo();
 		DelayMs(2000);
 	}
 }
