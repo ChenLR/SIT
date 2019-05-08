@@ -8,9 +8,9 @@
 #define SPI_GPIO_RCC		RCC_APB2Periph_GPIOA
 #define SPI_GPIO				GPIOA
 
-#define RST_PIN					GPIO_Pin_1
-#define DC_PIN					GPIO_Pin_2
-#define BUSY_PIN				GPIO_Pin_3
+#define BUSY_PIN				GPIO_Pin_1
+#define RST_PIN					GPIO_Pin_2
+#define DC_PIN					GPIO_Pin_3
 #define SPI_PIN_CS			GPIO_Pin_4	//SPI_PIN_SS
 #define SPI_PIN_SCK			GPIO_Pin_5
 #define SPI_PIN_MOSI		GPIO_Pin_7

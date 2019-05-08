@@ -319,7 +319,7 @@ void Eink_demo(void) {
 	//uint8_t * dummy_buffer;
 	ClearBuffer();
 	//DrawCharAt(0, 0, 'a', &Font24, 1);
-	DrawStringAt(0, 30, "99.99", &Font24, 3.5, 1);
+	DrawStringAt(0, 30, "12.34", &Font24, 3.5, 1);
 	//ClearFrame();
 	DisplayBlackFrame(image_buff);
 	// DisplayFrameOnly();

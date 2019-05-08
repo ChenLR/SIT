@@ -43,14 +43,14 @@ void Device_Setup() {
 	
 	// register standby functions for peripherals
 	Register_Standby_Funcs(LED_7_Seg_Standby);
-	// Register_Standby_Funcs(Eink_Standby);
+	Register_Standby_Funcs(Eink_Standby);
 }
 
 
 int main(void)
 {
 	int cnt_100ms = 0;
-	float depth = 99.99;
+	//float depth = 12.34;
 	
 	Device_Setup();
 
