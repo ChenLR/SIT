@@ -204,15 +204,20 @@ void DrawPixel(int x, int y, int colored) {
 /**
  *  @brief: this draws a charactor on the frame buffer but not refresh
  */
-void DrawCharAt(int x, int y, char ascii_char, sFONT* font, int colored) {
-    int i, j;
+void DrawCharAt(int x, int y, char ascii_char, sFONT* font, float scale, int colored) {
+    int i, j, ii, jj;
     unsigned int char_offset = (ascii_char - ' ') * font->Height * (font->Width / 8 + (font->Width % 8 ? 1 : 0));
     const uint8_t * ptr = &font->table[char_offset];
 
     for (j = 0; j < font->Height; j++) {
         for (i = 0; i < font->Width; i++) {
             if ( *ptr & (0x80 >> (i % 8))) {
-                DrawPixel(x + i, y + j, colored);
+								for(jj = (int)(j * scale); jj < (int)((j + 1) * scale); jj++) {
+										for(ii = (int)(i * scale); ii < (int)((i + 1) * scale); ii++) {
+											  DrawPixel(x + ii, y + jj, colored);
+										}
+										
+								}
             }
             if (i % 8 == 7) {
                 ptr++;
@@ -227,7 +232,7 @@ void DrawCharAt(int x, int y, char ascii_char, sFONT* font, int colored) {
 /**
 *  @brief: this displays a string on the frame buffer but not refresh
 */
-void DrawStringAt(int x, int y, char* text, sFONT* font, int colored) {
+void DrawStringAt(int x, int y, char* text, sFONT* font, float scale, int colored) {
     const char* p_text = text;
     unsigned int counter = 0;
     int refcolumn = x;
@@ -235,9 +240,9 @@ void DrawStringAt(int x, int y, char* text, sFONT* font, int colored) {
     /* Send the string character by character on EPD */
     while (*p_text != 0) {
         /* Display one character on EPD */
-        DrawCharAt(refcolumn, y, *p_text, font, colored);
+        DrawCharAt(refcolumn, y, *p_text, font, scale, colored);
         /* Decrement the column position by 16 */
-        refcolumn += font->Width;
+        refcolumn += (int)(font->Width * scale);
         /* Point on the next character */
         p_text++;
         counter++;
@@ -296,7 +301,7 @@ void Eink_demo(void) {
 	//uint8_t * dummy_buffer;
 	ClearBuffer();
 	//DrawCharAt(0, 0, 'a', &Font24, 1);
-	DrawStringAt(0, 0, "10.40", &Font24, 1);
+	DrawStringAt(0, 30, "10.40", &Font24, 3.5, 1);
 	ClearFrame();
 	DisplayBlackFrame(image_buff);
 	// DisplayFrameOnly();

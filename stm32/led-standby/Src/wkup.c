@@ -11,6 +11,44 @@
 //   At the end of initialization, check if pressing time is longer than 2s, if not, back to standby mode,
 //   otherwise, continue to run.
 
+
+//Green LED indicates wakeup status. It holds green during Check_WKUP status. It blinks when application is running.
+static uint8_t LED_Green_Status = 0;
+void Init_LED_Green() {
+	GPIO_InitTypeDef GPIO_InitStructure;
+	// Set GPIO for LED 13
+	// Enable clock for GPIOC
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	// Configure PA13 as push-pull output
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
+
+void Turn_On_LED_Green() {
+	// Reset bit will turn on LED (because the logic is interved)
+	GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+	LED_Green_Status = 1;
+}
+
+void Turn_Off_LED_Green() {
+	// Set bit will turn off LED (because the logic is interved)
+	GPIO_SetBits(GPIOC, GPIO_Pin_13);
+	LED_Green_Status = 0;
+}
+
+
+void Toggle_LED_Green() {
+	if(LED_Green_Status) {
+		Turn_Off_LED_Green();
+	}
+	else {
+		Turn_On_LED_Green();
+	}
+}
+
+
 //enter standby mode
 void Sys_Standby(void)
 {  
@@ -30,6 +68,7 @@ void Sys_Enter_Standby(void)
 uint8_t Check_WKUP(void) 
 {
 	uint8_t t=0;	//record time of pressing
+	Turn_On_LED_Green(); // turn on LED green as indicator
 	while(1)
 	{ 
 		if(GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_0))
@@ -90,7 +129,9 @@ void WKUP_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn; 
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; 
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; 
-	NVIC_Init(&NVIC_InitStructure); 
+	NVIC_Init(&NVIC_InitStructure);
+	
+	Init_LED_Green();
  
 	if(Check_WKUP()==0) Sys_Standby(); //if not press 2s, still standby
 		

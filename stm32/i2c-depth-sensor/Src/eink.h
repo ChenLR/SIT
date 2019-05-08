@@ -46,7 +46,7 @@
 #define ROTATE_270          3
 
 // Color inverse. 1 or 0 = set or reset a bit if set a colored pixel
-#define IF_INVERT_COLOR     1
+#define IF_INVERT_COLOR     0
 
 void Eink_Init(void);
 
