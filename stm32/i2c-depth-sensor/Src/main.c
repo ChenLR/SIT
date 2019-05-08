@@ -9,6 +9,7 @@
 #include "ds1307.h"
 #include "led_display.h"
 #include "adc.h"
+#include "eink.h"
 
 // PA9:		Tx
 // PA10:	Rx
@@ -19,25 +20,30 @@
 void setup() {
 	DelayInit();
 	USART1_Init();
-	ADC1_Init();
+	printf("Before Eink Init\n");
+	Eink_Init();
+	printf("After Eink Init\n");
+	
+	//ADC1_Init();
 	//ds1307_init();
-	ms5803_Init(ADDRESS_HIGH);
+	//ms5803_Init(ADDRESS_HIGH);
 	//led_7_seg_init();
 }
 
 
 int main(void)
 {
-	float bat;
+	//float bat;
 	setup();
-	
+	Eink_demo();
 	while (1)
 	{
 		//led_7_seg_demo();
-		ms5803_demo();
-		bat = ADC1_ReadBattery();
-		printf("%f\n", bat);
+		//ms5803_demo();
+		//bat = ADC1_ReadBattery();
+		//printf("%f\n", bat);
 		//ds1307_demo();
+		printf("xxx");
 		DelayMs(2000);
 	}
 }
