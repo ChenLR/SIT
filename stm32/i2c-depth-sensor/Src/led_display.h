@@ -46,13 +46,14 @@ enum {false, true};
 
 //this is the raw HT16K33 controller
 
-void led_7_seg_init(void);
-void setBrightness(uint8_t b);
-void blinkRate(uint8_t b);
-void writeDisplay(void);
-void clear(void);
-void led_7_seg_display(double n, uint8_t fracDigits, uint8_t base);
-void led_7_seg_demo(void);
+void LED_7_Seg_Init(void);
+void LED_7_Seg_Standby(void);
+void LED_7_Seg_SetBrightness(uint8_t b);
+void LED_7_Seg_BlinkRate(uint8_t b);
+void LED_7_Seg_WriteDisplay(void);
+void LED_7_Seg_Clear(void);
+void LED_7_Seg_Display(double n, uint8_t fracDigits, uint8_t base);
+void LED_7_Seg_Demo(void);
 
 // 7 segment
 #define DEC 10

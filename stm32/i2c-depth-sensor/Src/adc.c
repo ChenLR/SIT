@@ -1,7 +1,7 @@
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_adc.h"
-#include "usart.h"
+#include <stdio.h>
 
 void ADC1_Init()
 {
@@ -31,7 +31,7 @@ void ADC1_Init()
 	GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
-float ADC1_ReadBattery()
+float ADC1_ReadVoltage()
 {
 	// Start ADC conversion
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
@@ -39,5 +39,17 @@ float ADC1_ReadBattery()
 	while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
 
 	// return ADC_GetConversionValue(ADC1);
-	return (3.3*(((float)ADC_GetConversionValue(ADC1)/4096)))/1.87*4.21;
+	return (3.3*(((float)ADC_GetConversionValue(ADC1)/4096)));
+}
+
+
+float ADC1_ReadBattery()
+{
+	// return ADC_GetConversionValue(ADC1);
+	return ADC1_ReadVoltage()/1.87*4.21;
+}
+
+void Battery_demo() {
+	printf("Voltage = %.4fV\n", ADC1_ReadVoltage());
+	printf("Battery Level = %.4fV\n", ADC1_ReadBattery());
 }

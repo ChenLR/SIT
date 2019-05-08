@@ -49,9 +49,7 @@
 #define IF_INVERT_COLOR     0
 
 void Eink_Init(void);
-
-
-
+void Eink_Standby(void);
 void DisplayBlackFrame(uint8_t * frame_buffer_black);
 
 void Eink_demo(void);

@@ -46,27 +46,33 @@ static const uint8_t numbertable[] = {
 	0x71, /* F */
 };
 
-void setBrightness(uint8_t b) {
+void LED_7_Seg_SetBrightness(uint8_t b) {
   if (b > 15) b = 15;
 	i2c_write_no_reg(LED_ADDR, HT16K33_CMD_BRIGHTNESS | b); 
 }
 
-void blinkRate(uint8_t b) {
+void LED_7_Seg_BlinkRate(uint8_t b) {
   if (b > 3) b = 0; // turn off if not sure
   i2c_write_no_reg(LED_ADDR, HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (b << 1));
 }
 
-void led_7_seg_init() {
+void LED_7_Seg_Init() {
 	i2c_init();
 	i2c_write_no_reg(LED_ADDR,0x21); // turn on oscillator
-  blinkRate(HT16K33_BLINK_OFF);
-  setBrightness(15); // max brightness
+  LED_7_Seg_BlinkRate(HT16K33_BLINK_OFF);
+  LED_7_Seg_SetBrightness(15); // max brightness
+}
+
+void LED_7_Seg_Standby() {
+	LED_7_Seg_Clear();
+	LED_7_Seg_WriteDisplay();
+	LED_7_Seg_BlinkRate(HT16K33_BLINK_OFF);
 }
 
 //Display data in buffer on LED
 //All the drawing and printing routines only change the displaybuffer
 //call writeDispaly() to display on LED
-void writeDisplay(void) {
+void LED_7_Seg_WriteDisplay(void) {
 	uint8_t buf[16];
 	uint8_t i;
 	for (i=0; i<8; i++) {
@@ -76,15 +82,15 @@ void writeDisplay(void) {
 	i2c_write_multi_with_reg(LED_ADDR, 0x00, buf,16); // start at address $00
 }
 
-void clear(void) {
+void LED_7_Seg_Clear(void) {
 	uint8_t i;
   for (i=0; i<8; i++) {
     displaybuffer[i] = 0;
   }
 }
-void led_7_seg_display(double n, uint8_t fracDigits, uint8_t base){
+void LED_7_Seg_Display(double n, uint8_t fracDigits, uint8_t base){
 		printFloat(n, fracDigits, base);
-  	writeDisplay();
+  	LED_7_Seg_WriteDisplay();
 }
 
 /******************************* 7 SEGMENT OBJECT */
@@ -192,12 +198,9 @@ void printError(void) {
   }
 }
 
-void led_7_seg_demo(){
-	led_7_seg_display(12.3,2,DEC);
-	DelayMs(5000);
-	led_7_seg_display(12.345,2,DEC);
-	DelayMs(5000);
-	led_7_seg_display(1.234, 2, DEC);
-	DelayMs(5000);
+void LED_7_Seg_Demo(){
+	//LED_7_Seg_Display(12.3,2,DEC);
+	LED_7_Seg_Display(12.34,2,DEC);
+	//LED_7_Seg_Display(1.234, 2, DEC);
 }
 

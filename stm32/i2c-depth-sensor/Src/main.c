@@ -2,6 +2,7 @@
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
 
+#include "wkup.h"
 #include "delay.h"
 #include "usart.h"
 #include "i2c.h"
@@ -17,34 +18,55 @@
 // PB11:	SDA
 
 
-void setup() {
+void Device_Setup() {
+	// wake up if pressed more than 2s
 	DelayInit();
-	USART1_Init();
-	printf("Before Eink Init\n");
-	Eink_Init();
-	printf("After Eink Init\n");
+	WKUP_Init();
 	
-	//ADC1_Init();
-	//ds1307_init();
-	//ms5803_Init(ADDRESS_HIGH);
-	//led_7_seg_init();
+	// initialize peripherals
+	USART1_Init();
+	printf("##################\n");
+	printf("USART1 Initialized\n");
+	Eink_Init();
+	printf("Eink Display Initialized\n");
+	ADC1_Init();
+	printf("ADC1 Initialized\n");
+	ds1307_init();
+	printf("RTC Initialized\n");
+	ms5803_Init(ADDRESS_HIGH);
+	printf("Depth Sensor Initialized\n");
+	LED_7_Seg_Init();
+	printf("LED Display Initialized\n");
+	printf("------------------\n");
+	printf("All Peripherals Initialized\n");
+	printf("------------------\n");
+	
+	// register standby functions for peripherals
+	Register_Standby_Funcs(LED_7_Seg_Standby);
+	// Register_Standby_Funcs(Eink_Standby);
 }
 
 
 int main(void)
 {
-	//float bat;
-	setup();
-	Eink_demo();
+	int cnt_100ms = 0;
+	float depth = 99.99;
+	
+	Device_Setup();
+
 	while (1)
 	{
-		//led_7_seg_demo();
-		//ms5803_demo();
-		//bat = ADC1_ReadBattery();
-		//printf("%f\n", bat);
-		//ds1307_demo();
-		printf("xxx");
-		DelayMs(2000);
+		if(!(cnt_100ms % 5)) Toggle_LED_Green(); // 0.5s
+		if(!(cnt_100ms % 20)) ds1307_demo();		// 1s
+		if(!(cnt_100ms % 20)) ms5803_demo();		// 1s
+		if(!(cnt_100ms % 20)) Battery_demo();		// 2s
+		if(!(cnt_100ms % 20)) LED_7_Seg_Demo();	// 2s
+		if(!(cnt_100ms % 1200)) Eink_demo();			// 120s
+		
+		if(!(cnt_100ms % 6000)) cnt_100ms = 0;
+
+		cnt_100ms++;
+		DelayMs(100);
 	}
 }
 

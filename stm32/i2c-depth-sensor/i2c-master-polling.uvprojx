@@ -429,6 +429,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\eink.c</FilePath>
             </File>
+            <File>
+              <FileName>wkup.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\wkup.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -478,6 +483,11 @@
               <FileName>eink.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Src\eink.h</FilePath>
+            </File>
+            <File>
+              <FileName>wkup.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Src\wkup.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -532,6 +542,12 @@
           <targetInfo name="STM32F103C8"/>
         </targetInfos>
       </component>
+      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="EXTI" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH">
+        <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.3.0"/>
+        <targetInfos>
+          <targetInfo name="STM32F103C8"/>
+        </targetInfos>
+      </component>
       <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="Framework" Cvendor="Keil" Cversion="3.5.1" condition="STM32F1xx STDPERIPH">
         <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.0.0"/>
         <targetInfos>
@@ -546,6 +562,12 @@
       </component>
       <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="I2C" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH RCC">
         <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.0.0"/>
+        <targetInfos>
+          <targetInfo name="STM32F103C8"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="PWR" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH RCC">
+        <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.3.0"/>
         <targetInfos>
           <targetInfo name="STM32F103C8"/>
         </targetInfos>

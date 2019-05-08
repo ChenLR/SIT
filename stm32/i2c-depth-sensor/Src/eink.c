@@ -12,6 +12,7 @@ static int height = 296;
 
 // private functions
 void Eink_Reset(void);
+void Eink_Sleep(void);
 void Eink_SendCommand(uint8_t command);
 void Eink_SendData(uint8_t data);
 void Eink_WaitUntilIdle(void);
@@ -22,6 +23,12 @@ void Eink_Reset() {
     DelayMs(200);
 		GPIO_SetBits(GPIOA, RST_PIN);
     DelayMs(200);   
+}
+
+
+void Eink_Sleep() {
+  Eink_SendCommand(DEEP_SLEEP);
+  Eink_SendData(0xa5);
 }
 
 
@@ -275,6 +282,15 @@ void Eink_Init(void) {
     /* EPD hardware init end */
 }
 
+
+void Eink_Standby(void) {
+	Eink_WaitUntilIdle();
+	ClearFrame();
+	DisplayFrameOnly();
+	Eink_WaitUntilIdle();
+	//Eink_Sleep();
+}
+
 void DisplayBlackFrame(uint8_t * frame_buffer_black) {
 	int i;
     Eink_SendCommand(DATA_START_TRANSMISSION_1);
@@ -292,17 +308,19 @@ void DisplayBlackFrame(uint8_t * frame_buffer_black) {
         DelayMs(2);
 		printf("Transmission Complete\n");
     Eink_SendCommand(DISPLAY_REFRESH);
-    Eink_WaitUntilIdle();
+    // Eink_WaitUntilIdle(); // No Stall
 		printf("Display Complete\n");
 }
 
 
 void Eink_demo(void) {
+	//Eink_Init();
+	//if(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0) printf("!!!!!!!!!!!!!!!!!!!!!!\n");
 	//uint8_t * dummy_buffer;
 	ClearBuffer();
 	//DrawCharAt(0, 0, 'a', &Font24, 1);
-	DrawStringAt(0, 30, "10.40", &Font24, 3.5, 1);
-	ClearFrame();
+	DrawStringAt(0, 30, "99.99", &Font24, 3.5, 1);
+	//ClearFrame();
 	DisplayBlackFrame(image_buff);
 	// DisplayFrameOnly();
 }
