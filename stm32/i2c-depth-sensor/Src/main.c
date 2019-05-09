@@ -61,7 +61,7 @@ int main(void)
 		if(!(cnt_100ms % 20)) ms5803_demo();		// 1s
 		if(!(cnt_100ms % 20)) Battery_demo();		// 2s
 		if(!(cnt_100ms % 20)) LED_7_Seg_Demo();	// 2s
-		if(!(cnt_100ms % 1200)) Eink_demo();			// 120s
+		if(!(cnt_100ms % 300)) Eink_demo();			// 30s
 		
 		if(!(cnt_100ms % 6000)) cnt_100ms = 0;
 
