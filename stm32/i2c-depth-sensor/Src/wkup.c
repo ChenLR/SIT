@@ -11,6 +11,14 @@
 //   At the end of initialization, check if pressing time is longer than 2s, if not, back to standby mode,
 //   otherwise, continue to run.
 
+static uint8_t DEVICE_ON = 0;
+
+//private functions
+void Sys_Standby(void);
+void Sys_Enter_Standby(void);
+void EXTI0_IRQHandler(void);
+uint8_t Check_WKUP(void);
+
 
 //Green LED indicates wakeup status. It holds green during Check_WKUP status. It blinks when application is running.
 static uint8_t LED_Green_Status = 0;
@@ -57,8 +65,28 @@ void Sys_Standby(void)
 	PWR_EnterSTANDBYMode();	  //enter standby mode 
 }
 
+
+//register standby functions for peripherals
+static void (*Standby_Funcs[STANDBY_FUNCS_NUM])(void);
+static uint8_t Standby_Funcs_Cnt = 0;
+
+void Register_Standby_Funcs(void (*standby_func)(void)) {
+	if(Standby_Funcs_Cnt < STANDBY_FUNCS_NUM - 1) {
+		Standby_Funcs[Standby_Funcs_Cnt] = standby_func;
+		Standby_Funcs_Cnt++;
+	}
+	DelayMs(10);
+}
+
 void Sys_Enter_Standby(void)
 {			 
+	uint8_t i;
+	Turn_Off_LED_Green();
+	//run peripherals' standby functions
+	for(i = 0; i < Standby_Funcs_Cnt; i++) {
+		Standby_Funcs[i]();
+	}
+	//disable clock;
 	RCC_APB2PeriphResetCmd(0x01fc,DISABLE);//reset
 	Sys_Standby();
 }
@@ -92,11 +120,13 @@ uint8_t Check_WKUP(void)
 //PA0 interrupt
 void EXTI0_IRQHandler(void)
 { 		    		    				     		    
-	EXTI_ClearITPendingBit(EXTI_Line0); //clear interrupt  
-	if(Check_WKUP())//check if it is a real turn off
-	{		  
-		Sys_Enter_Standby();  
+	if(DEVICE_ON) {
+		if(Check_WKUP()) { //check if it is a real turn off
+			DEVICE_ON = 0;
+			Sys_Enter_Standby();
+		}
 	}
+	EXTI_ClearITPendingBit(EXTI_Line0); //clear interrupt
 } 
 
 //initialize wakeup module
@@ -134,5 +164,6 @@ void WKUP_Init(void)
 	Init_LED_Green();
  
 	if(Check_WKUP()==0) Sys_Standby(); //if not press 2s, still standby
+	DEVICE_ON = 1;
 		
 }

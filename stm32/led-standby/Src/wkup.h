@@ -2,6 +2,7 @@
 #define __WKUP_H
 #include "stm32f10x.h"
 
+void Toggle_LED_Green(void);
 
 void Sys_Standby(void);
 void Sys_Enter_Standby(void);

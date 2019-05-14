@@ -1,15 +1,15 @@
 /******************************************************************************
-MS5803_I2C.cpp
-Library for MS5803 pressure sensor.
+ms5803.cpp
+Library for ms5803 pressure sensor.
 Casey Kuhns @ SparkFun Electronics
 6/26/2014
-https://github.com/sparkfun/MS5803-14BA_Breakout
+https://github.com/sparkfun/ms5803-14BA_Breakout
 
 The MS58XX MS57XX and MS56XX by Measurement Specialties is a low cost I2C pressure
 sensor.  This sensor can be used in weather stations and for altitude
 estimations. It can also be used underwater for water depth measurements. 
 
-In this file are the functions in the MS5803 class
+In this file are the functions in the ms5803 class
 
 Resources:
 This library uses the Arduino Wire.h to complete I2C transactions.
@@ -17,7 +17,7 @@ This library uses the Arduino Wire.h to complete I2C transactions.
 Development environment specifics:
 	IDE: Arduino 1.0.5
 	Hardware Platform: Arduino Pro 3.3V/8MHz
-	MS5803 Breakout Version: 1.0
+	ms5803 Breakout Version: 1.0
 	
 **Updated for Arduino 1.6.4 5/2015**
 
@@ -32,7 +32,7 @@ Distributed as-is; no warranty is given.
 #include "i2c.h"
 #include "usart.h"
 
-#include "MS5803_I2C.h"
+#include "ms5803.h"
 
 #include <math.h>
 
@@ -48,52 +48,50 @@ void sensorWait(uint32_t time); // General delay function see: delay()
 
 
 //------------------------------------------------
-void MS5803_Init(enum ms5803_addr address) {
+void ms5803_Init(enum ms5803_addr address) {
+	i2c_init();
 	_address = address;
-	MS5803_Reset();
-	MS5803_Begin();
+	ms5803_Reset();
+	ms5803_Begin();
 }
 
-void MS5803_Reset(void)// Reset device I2C
+void ms5803_Reset(void)// Reset device I2C
 {
    sendCommand(CMD_RESET);
    sensorWait(3);
 }
 
-uint8_t MS5803_Begin(void)
+uint8_t ms5803_Begin(void)
 // Initialize library for subsequent pressure measurements
 {  
 	uint8_t i;
 	uint8_t buf[10];
 	for(i = 0; i <= 7; i++)
   {
-		//Wire.requestFrom( _address, 2);
 		uint8_t highByte; 
 		uint8_t lowByte;
 		sendCommand(CMD_PROM + (i * 2));
-		i2c_read_bytes(_address, buf, 2);
+		i2c_read_multi_no_reg(_address, 2, buf);
 		highByte = buf[0];
 		lowByte = buf[1];
-		//i2c_read(_address, &highByte);
-	  //i2c_read(_address, &lowByte);
- 	  // Uncomment below for debugging output.
-		USART2_PutChar('C');
-		USART2_PutInt(i);
-		USART2_PutString("= ");
-		USART2_PutInt(i);
 		coefficient[i] = (highByte << 8)|lowByte;
-		USART2_PutInt(coefficient[i]);
-		USART2_PutString("\n");
+ 	  // Uncomment below for debugging output.
+		// USART2_PutChar('C');
+		// USART2_PutInt(i);
+		// USART2_PutString("= ");
+		// USART2_PutInt(i);
+		// USART2_PutInt(coefficient[i]);
+		// USART2_PutString("\n");
 	}
 
 	return 0;
 }
 	
-float MS5803_GetTemperature(enum temperature_units units, enum precision _precision)
+float ms5803_GetTemperature(enum temperature_units units, enum precision _precision)
 // Return a temperature reading in either F or C.
 {
 	float temperature_reported;
-	MS5803_GetMeasurements(_precision);
+	ms5803_GetMeasurements(_precision);
 	// If Fahrenheit is selected return the temperature converted to F
 	if(units == FAHRENHEIT)
   {
@@ -110,17 +108,17 @@ float MS5803_GetTemperature(enum temperature_units units, enum precision _precis
 	}
 }
 
-float MS5803_GetPressure(enum precision _precision)
+float ms5803_GetPressure(enum precision _precision)
 // Return a pressure reading units Pa.
 {
 	float pressure_reported;
-	MS5803_GetMeasurements(_precision);
+	ms5803_GetMeasurements(_precision);
 	pressure_reported = _pressure_actual;
 	pressure_reported = pressure_reported / 10.0f;
 	return pressure_reported;
 }
 
-void MS5803_GetMeasurements(enum precision _precision)
+void ms5803_GetMeasurements(enum precision _precision)
 
 {
 	//Retrieve ADC result
@@ -208,8 +206,7 @@ uint32_t getADCconversion(enum measurement _measurement, enum precision _precisi
 	}	
 	
 	sendCommand(CMD_ADC_READ);
-	//Wire.requestFrom(_address, 3);
-	i2c_read_bytes(_address, buf, 3);
+	i2c_read_multi_no_reg(_address, 3, buf);
 	highByte = buf[0];
 	midByte = buf[1];
 	lowByte = buf[2];
@@ -225,10 +222,7 @@ uint32_t getADCconversion(enum measurement _measurement, enum precision _precisi
 
 void sendCommand(uint8_t command)
 {	
-	//Wire.beginTransmission( _address);
-	//Wire.write(command);
-	//Wire.endTransmission();
-	i2c_write(_address, command);
+	i2c_write_no_reg(_address, command);
 	
 }
 
@@ -236,4 +230,29 @@ void sensorWait(uint32_t time)
 // Delay function.  This can be modified to work outside of Arduino based MCU's
 {
 	DelayMs(time);
+}
+
+//------------------------------------------------
+void ms5803_demo() {
+	float temp, pres;
+	temp = ms5803_GetTemperature(CELSIUS, ADC_256);
+	pres = ms5803_GetPressure(ADC_4096);
+	printf("temp:\t%.3f\n", temp);
+	printf("pressure:\t%.3f\n", pres);
+}
+
+
+float mbar_to_meter(float pressure) {
+	// 1000 mbar = 1019.72 cm of water
+	return pressure / 1000 * 10.1972;
+}
+
+static float init_pressure = 0;
+
+float ms5803_getDepth() {
+	float delta_pressure, depth;
+	if (init_pressure == 0) init_pressure = ms5803_GetPressure(ADC_4096);
+	delta_pressure = ms5803_GetPressure(ADC_4096) - init_pressure;
+	depth = mbar_to_meter(delta_pressure);
+	return depth;
 }
