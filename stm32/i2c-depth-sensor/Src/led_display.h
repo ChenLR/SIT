@@ -54,6 +54,7 @@ void LED_7_Seg_WriteDisplay(void);
 void LED_7_Seg_Clear(void);
 void LED_7_Seg_Display(double n, uint8_t fracDigits, uint8_t base);
 void LED_7_Seg_Demo(void);
+void LED_7_Seg_Display_Depth(float depth);
 
 // 7 segment
 #define DEC 10

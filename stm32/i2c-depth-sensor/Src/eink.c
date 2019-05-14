@@ -4,6 +4,7 @@
 #include "eink.h"
 #include "fonts.h"
 #include <stdio.h>
+#include <math.h>
 
 // image buffer
 static uint8_t image_buff[4736]; // 128 * 296 / 8
@@ -325,3 +326,21 @@ void Eink_demo(void) {
 	// DisplayFrameOnly();
 }
 
+void Eink_Display_Depth(float depth) {
+	char depth_str[10];
+	int dig = (int)depth;
+	int frac = (int)((fabsf(depth - dig)) * 100 + .5);
+	ClearBuffer();
+	sprintf(depth_str, "%2d.%02d", dig, frac);
+	DrawStringAt(0, 30, depth_str, &Font24, 3.5, 1);
+	DisplayBlackFrame(image_buff);
+}
+
+void Eink_Display_Welcome(char* line1, char* line2, char* line3){
+	ClearBuffer();
+	DrawStringAt(0, 0, "SIT  Ver 0.1", &Font24, 1.2, 1);
+	DrawStringAt(0, 40, line1, &Font24, 1, 1);
+	DrawStringAt(0, 70, line2, &Font24, 1, 1);
+	DrawStringAt(0, 100, line3, &Font24, 1, 1);
+	DisplayBlackFrame(image_buff);
+}

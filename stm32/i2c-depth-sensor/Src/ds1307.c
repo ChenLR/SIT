@@ -10,6 +10,7 @@
 #include "ds1307.h"
 #include "usart.h"
 #include <stdio.h>
+#include <string.h>
 
 /** Private function prototypes --------------------------------------------- */
 uint8_t bcd2bin(uint8_t bcd);
@@ -472,13 +473,13 @@ uint8_t check_min_max(uint8_t val, uint8_t min, uint8_t max)
 
 static uint8_t set_date_flag = 0;
 
-void ds1307_demo() {
+void ds1307_demo(char* line1, char* line2) {
 	uint8_t D, d, M, y, h, m, s;
 	// Set initial date and time
 	if (set_date_flag) {
 		set_date_flag = 0;
-	  ds1307_set_calendar_date(DS1307_FRIDAY, 3, 5, 19);
-	  ds1307_set_time_24(18, 59, 50);
+	  ds1307_set_calendar_date(DS1307_MONDAY, 13, 5, 19); // Date/Month/Year
+	  ds1307_set_time_24(16, 30, 00);
 	}
 	// Get date and time
 		ds1307_get_calendar_date(&D, &d, &M, &y);
@@ -486,18 +487,21 @@ void ds1307_demo() {
 		
 		// Display date and time
 		
-		printf((d <= 9) ? "0%d" : "%d", d);
-		printf("/");
-		printf((M <= 9) ? "0%d" : "%d", M);
-		printf("/");
-		printf("20%d", y);
-		printf("-");
-		printf((h <= 9) ? "0%d" : "%d", h);
-		printf(":");
-		printf((m <= 9) ? "0%d" : "%d", m);
-		printf(":");
-		printf((s <= 9) ? "0%d" : "%d", s);
-		printf("\n");
+	  sprintf(line1, "Date  ");
+		sprintf(line1 + strlen(line1), (d <= 9) ? "0%d" : "%d", d);
+		sprintf(line1 + strlen(line1), "/");
+		sprintf(line1 + strlen(line1), (M <= 9) ? "0%d" : "%d", M);
+		sprintf(line1 + strlen(line1), "/");
+		sprintf(line1 + strlen(line1), "20%d", y);
+	  printf("%s\n", line1);
+		
+	  sprintf(line2, "Time  ");
+		sprintf(line2 + strlen(line2), (h <= 9) ? "0%d" : "%d", h);
+		sprintf(line2 + strlen(line2), ":");
+		sprintf(line2 + strlen(line2), (m <= 9) ? "0%d" : "%d", m);
+		sprintf(line2 + strlen(line2), ":");
+		sprintf(line2 + strlen(line2), (s <= 9) ? "0%d" : "%d", s);
+	  printf("%s\n", line2);
 }
 
 /********************************* END OF FILE ********************************/

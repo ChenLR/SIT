@@ -240,3 +240,19 @@ void ms5803_demo() {
 	printf("temp:\t%.3f\n", temp);
 	printf("pressure:\t%.3f\n", pres);
 }
+
+
+float mbar_to_meter(float pressure) {
+	// 1000 mbar = 1019.72 cm of water
+	return pressure / 1000 * 10.1972;
+}
+
+static float init_pressure = 0;
+
+float ms5803_getDepth() {
+	float delta_pressure, depth;
+	if (init_pressure == 0) init_pressure = ms5803_GetPressure(ADC_4096);
+	delta_pressure = ms5803_GetPressure(ADC_4096) - init_pressure;
+	depth = mbar_to_meter(delta_pressure);
+	return depth;
+}

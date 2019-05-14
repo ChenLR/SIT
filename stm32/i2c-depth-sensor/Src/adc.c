@@ -49,7 +49,7 @@ float ADC1_ReadBattery()
 	return ADC1_ReadVoltage()/1.87*4.21;
 }
 
-void Battery_demo() {
-	printf("Voltage = %.4fV\n", ADC1_ReadVoltage());
-	printf("Battery Level = %.4fV\n", ADC1_ReadBattery());
+void Battery_demo(char* line) {
+	sprintf(line, "Vbatt %.4fV", ADC1_ReadBattery());
+	printf("%s\n", line);
 }

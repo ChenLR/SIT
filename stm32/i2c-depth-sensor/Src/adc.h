@@ -7,6 +7,6 @@ void ADC1_Init(void);
 
 float ADC1_ReadBattery(void);
 
-void Battery_demo(void);
+void Battery_demo(char*S);
 
 #endif

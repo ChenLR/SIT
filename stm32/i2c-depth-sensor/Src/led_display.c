@@ -204,3 +204,6 @@ void LED_7_Seg_Demo(){
 	//LED_7_Seg_Display(1.234, 2, DEC);
 }
 
+void LED_7_Seg_Display_Depth(float depth) {
+	LED_7_Seg_Display(depth,2,DEC);
+}

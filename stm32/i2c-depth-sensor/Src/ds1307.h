@@ -77,7 +77,7 @@ void ds1307_get_time_24(uint8_t* hours, uint8_t* minutes, uint8_t* seconds);
 void ds1307_set_time_24(uint8_t hours, uint8_t minutes, uint8_t seconds);
 void ds1307_get_calendar_date(uint8_t* day, uint8_t* date, uint8_t* month, uint8_t* year);
 void ds1307_set_calendar_date(uint8_t day, uint8_t date, uint8_t month, uint8_t year);
-void ds1307_demo(void);
+void ds1307_demo(char* line1, char* line2);
 
 #ifdef __cplusplus
 }

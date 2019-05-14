@@ -84,5 +84,6 @@ float ms5803_GetTemperature(enum temperature_units units, enum precision _precis
 float ms5803_GetPressure(enum precision _precision);
 void ms5803_GetMeasurements(enum precision _precision);
 void ms5803_demo(void);
+float ms5803_getDepth(void);
 
 #endif

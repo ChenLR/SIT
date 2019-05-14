@@ -46,22 +46,30 @@ void Device_Setup() {
 	Register_Standby_Funcs(Eink_Standby);
 }
 
+static uint8_t welcome_flag = 1;
 
 int main(void)
 {
 	int cnt_100ms = 0;
-	//float depth = 12.34;
+	float depth = 0.0;
+	char line1[30], line2[30], line3[30];
 	
 	Device_Setup();
 
 	while (1)
 	{
 		if(!(cnt_100ms % 5)) Toggle_LED_Green(); // 0.5s
-		if(!(cnt_100ms % 20)) ds1307_demo();		// 1s
-		if(!(cnt_100ms % 20)) ms5803_demo();		// 1s
-		if(!(cnt_100ms % 20)) Battery_demo();		// 2s
-		if(!(cnt_100ms % 20)) LED_7_Seg_Demo();	// 2s
-		if(!(cnt_100ms % 300)) Eink_demo();			// 30s
+		if(!(cnt_100ms % 20)) ds1307_demo(line1, line2);		// 1s
+		if(!(cnt_100ms % 20)) depth = ms5803_getDepth();		// 1s
+		if(!(cnt_100ms % 20)) Battery_demo(line3);		// 2s
+		if(!(cnt_100ms % 20)) LED_7_Seg_Display_Depth(depth);	// 2s
+		if(!(cnt_100ms % 300)) {						// 30s
+			if(welcome_flag) {
+				welcome_flag = 0;
+				Eink_Display_Welcome(line1, line2, line3);
+			}
+			else Eink_Display_Depth(depth);
+		}
 		
 		if(!(cnt_100ms % 6000)) cnt_100ms = 0;
 
