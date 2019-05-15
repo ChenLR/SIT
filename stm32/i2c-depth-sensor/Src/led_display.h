@@ -47,6 +47,7 @@ enum {false, true};
 //this is the raw HT16K33 controller
 
 void LED_7_Seg_Init(void);
+void LED_7_Seg_Pre_Standby(void);
 void LED_7_Seg_Standby(void);
 void LED_7_Seg_SetBrightness(uint8_t b);
 void LED_7_Seg_BlinkRate(uint8_t b);
