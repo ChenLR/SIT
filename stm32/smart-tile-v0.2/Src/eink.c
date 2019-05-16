@@ -16,6 +16,7 @@ void Eink_Reset(void);
 void Eink_Sleep(void);
 void Eink_SendCommand(uint8_t command);
 void Eink_SendData(uint8_t data);
+void Eink_SetLut(void);
 void Eink_WaitUntilIdle(void);
 
 
@@ -27,9 +28,10 @@ void Eink_Reset() {
 }
 
 
+
 void Eink_Sleep() {
-  Eink_SendCommand(DEEP_SLEEP);
-  Eink_SendData(0xa5);
+    Eink_SendCommand(DEEP_SLEEP_MODE);
+    Eink_WaitUntilIdle();
 }
 
 
@@ -46,100 +48,107 @@ void Eink_SendData(uint8_t data) {
   SPIx_Transfer(data);
 }
 
+const unsigned char lut_full_update[] =
+{
+    0x02, 0x02, 0x01, 0x11, 0x12, 0x12, 0x22, 0x22, 
+    0x66, 0x69, 0x69, 0x59, 0x58, 0x99, 0x99, 0x88, 
+    0x00, 0x00, 0x00, 0x00, 0xF8, 0xB4, 0x13, 0x51, 
+    0x35, 0x51, 0x51, 0x19, 0x01, 0x00
+};
+
+/**
+ *  @brief: set the look-up table register
+ */
+void Eink_SetLut() {
+	int i;
+    Eink_SendCommand(WRITE_LUT_REGISTER);
+    /* the length of look-up table is 30 bytes */
+    for (i = 0; i < 30; i++) {
+        Eink_SendData(lut_full_update[i]);
+    }
+}
+
 
 void Eink_WaitUntilIdle() {
 	float time_out = 0;
-	float thresh = 15;
-    while(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0 && time_out < thresh) {      //0: busy, 1: idle
+	float thresh = 5;
+    while(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 1 && time_out < thresh) {      //LOW: idle, HIGH: busy
         DelayMs(100);
 			time_out += 0.1;
     }      
 }
 
+/**
+ *  @brief: private function to specify the memory area for data R/W
+ */
+void Eink_SetMemoryArea(int x_start, int y_start, int x_end, int y_end) {
+    Eink_SendCommand(SET_RAM_X_ADDRESS_START_END_POSITION);
+    /* x point must be the multiple of 8 or the last 3 bits will be ignored */
+    Eink_SendData((x_start >> 3) & 0xFF);
+    Eink_SendData((x_end >> 3) & 0xFF);
+    Eink_SendCommand(SET_RAM_Y_ADDRESS_START_END_POSITION);
+    Eink_SendData(y_start & 0xFF);
+    Eink_SendData((y_start >> 8) & 0xFF);
+    Eink_SendData(y_end & 0xFF);
+    Eink_SendData((y_end >> 8) & 0xFF);
+}
+
+/**
+ *  @brief: private function to specify the start point for data R/W
+ */
+void Eink_SetMemoryPointer(int x, int y) {
+    Eink_SendCommand(SET_RAM_X_ADDRESS_COUNTER);
+    /* x point must be the multiple of 8 or the last 3 bits will be ignored */
+    Eink_SendData((x >> 3) & 0xFF);
+    Eink_SendCommand(SET_RAM_Y_ADDRESS_COUNTER);
+    Eink_SendData(y & 0xFF);
+    Eink_SendData((y >> 8) & 0xFF);
+    Eink_WaitUntilIdle();
+}
+
 // from buffer to display
 
 /**
- *  @brief: transmit partial data to the black part of SRAM
+ *  @brief: clear the frame memory with the specified color.
+ *          this won't update the display.
  */
-void SetPartialWindowBlack(uint8_t * buffer_black, int x, int y, int w, int l) {
-	  int i;
-    Eink_SendCommand(PARTIAL_IN);
-    Eink_SendCommand(PARTIAL_WINDOW);
-    Eink_SendData(x & 0xf8);     // x should be the multiple of 8, the last 3 bit will always be ignored
-    Eink_SendData(((x & 0xf8) + w  - 1) | 0x07);
-    Eink_SendData(y >> 8);        
-    Eink_SendData(y & 0xff);
-    Eink_SendData((y + l - 1) >> 8);        
-    Eink_SendData((y + l - 1) & 0xff);
-    Eink_SendData(0x01);         // Gates scan both inside and outside of the partial window. (default) 
-    DelayMs(2);
-    Eink_SendCommand(DATA_START_TRANSMISSION_1);
-    for(i = 0; i < w  / 8 * l; i++) {
-        Eink_SendData(buffer_black[i]);  
-    }
-    DelayMs(2);
-    Eink_SendCommand(PARTIAL_OUT);
-}
-
-
-/**
- *  @brief: transmit partial data to the black part of SRAM
- */
-void SetPartialWindowRed(uint8_t * buffer_red, int x, int y, int w, int l) {
-	  int i;
-    Eink_SendCommand(PARTIAL_IN);
-    Eink_SendCommand(PARTIAL_WINDOW);
-    Eink_SendData(x & 0xf8);     // x should be the multiple of 8, the last 3 bit will always be ignored
-    Eink_SendData(((x & 0xf8) + w  - 1) | 0x07);
-    Eink_SendData(y >> 8);        
-    Eink_SendData(y & 0xff);
-    Eink_SendData((y + l - 1) >> 8);        
-    Eink_SendData((y + l - 1) & 0xff);
-    Eink_SendData(0x01);         // Gates scan both inside and outside of the partial window. (default) 
-    DelayMs(2);
-    Eink_SendCommand(DATA_START_TRANSMISSION_2);
-    for(i = 0; i < w  / 8 * l; i++) {
-        Eink_SendData(buffer_red[i]);  
-    }
-    DelayMs(2);
-    Eink_SendCommand(PARTIAL_OUT);
-}
-
-
-/**
- * @brief: clear the frame data from the SRAM, this won't refresh the display
- */
-void ClearFrame(void) {
+void Eink_ClearFrameMemory(uint8_t color) {
 	int i;
-    Eink_SendCommand(TCON_RESOLUTION);
-    Eink_SendData(width >> 8);
-    Eink_SendData(width & 0xff);
-    Eink_SendData(height >> 8);        
-    Eink_SendData(height & 0xff);
+    Eink_SetMemoryArea(0, 0, EPD_WIDTH - 1, EPD_HEIGHT - 1);
+    Eink_SetMemoryPointer(0, 0);
+    Eink_SendCommand(WRITE_RAM);
+    /* send the color data */
+    for (i = 0; i < EPD_WIDTH / 8 * EPD_HEIGHT; i++) {
+        Eink_SendData(color);  // 0xFF for white
+    }
+}
 
-    Eink_SendCommand(DATA_START_TRANSMISSION_1);           
-    DelayMs(2);
-    for(i = 0; i < width * height / 8; i++) {
-        Eink_SendData(0xFF);  
-    }  
-    DelayMs(2);
-    Eink_SendCommand(DATA_START_TRANSMISSION_2);           
-    DelayMs(2);
-    for(i = 0; i < width * height / 8; i++) {
-        Eink_SendData(0xFF);  
-    }  
-    DelayMs(2);
+/**
+ *  @brief: update the display
+ *          there are 2 memory areas embedded in the e-paper display
+ *          but once this function is called,
+ *          the the next action of SetFrameMemory or ClearFrame will 
+ *          set the other memory area.
+ */
+void Eink_DisplayFrame(void) {
+    Eink_SendCommand(DISPLAY_UPDATE_CONTROL_2);
+    Eink_SendData(0xC4);
+    Eink_SendCommand(MASTER_ACTIVATION);
+    Eink_SendCommand(TERMINATE_FRAME_READ_WRITE);
+    // Eink_WaitUntilIdle();
 }
 
 
-void DisplayFrameOnly(void) {
-	printf("Send Display Command\n");
-	Eink_SendCommand(DISPLAY_REFRESH);
-	printf("Wait for Idle\n");
-	Eink_WaitUntilIdle();
-	printf("Display finished\n");
+void Eink_SetFrameMemory(uint8_t * image_buffer) {
+	int i;
+    Eink_SetMemoryArea(0, 0, EPD_WIDTH - 1, EPD_HEIGHT - 1);
+    Eink_SetMemoryPointer(0, 0);
+    Eink_SendCommand(WRITE_RAM);
+    /* send the image data */
+    for (i = 0; i < EPD_WIDTH / 8 * EPD_HEIGHT; i++) {
+        Eink_SendData(image_buffer[i]);
+    }
 }
-
 
 // draw to buffer
 
@@ -267,68 +276,53 @@ void Eink_Init(void) {
 	  SPIx_Init();
 	/* EPD hardware init start */
     Eink_Reset();
-    Eink_SendCommand(BOOSTER_SOFT_START);
-    Eink_SendData(0x17);
-    Eink_SendData(0x17);
-    Eink_SendData(0x17);
-    Eink_SendCommand(POWER_ON);
-    Eink_WaitUntilIdle();
-    Eink_SendCommand(PANEL_SETTING);
-    Eink_SendData(0x8F);
-    Eink_SendCommand(VCOM_AND_DATA_INTERVAL_SETTING);
-    Eink_SendData(0x77);
-    Eink_SendCommand(TCON_RESOLUTION);
-    Eink_SendData(0x80);
-    Eink_SendData(0x01);
-    Eink_SendData(0x28);
-    Eink_SendCommand(VCM_DC_SETTING_REGISTER);
-    Eink_SendData(0X0A);
+    Eink_SendCommand(DRIVER_OUTPUT_CONTROL);
+    Eink_SendData((EPD_HEIGHT - 1) & 0xFF);
+    Eink_SendData(((EPD_HEIGHT - 1) >> 8) & 0xFF);
+    Eink_SendData(0x00);                     // GD = 0; SM = 0; TB = 0;
+    Eink_SendCommand(BOOSTER_SOFT_START_CONTROL);
+    Eink_SendData(0xD7);
+    Eink_SendData(0xD6);
+    Eink_SendData(0x9D);
+    Eink_SendCommand(WRITE_VCOM_REGISTER);
+    Eink_SendData(0xA8);                     // VCOM 7C
+    Eink_SendCommand(SET_DUMMY_LINE_PERIOD);
+    Eink_SendData(0x1A);                     // 4 dummy lines per gate
+    Eink_SendCommand(SET_GATE_TIME);
+    Eink_SendData(0x08);                     // 2us per line
+    Eink_SendCommand(BORDER_WAVEFORM_CONTROL);
+    Eink_SendData(0x03);
+    Eink_SendCommand(DATA_ENTRY_MODE_SETTING);
+    Eink_SendData(0x03);                     // X increment; Y increment
+    Eink_SetLut();
     /* EPD hardware init end */
 }
 
 
 void Eink_Standby(void) {
 	Eink_WaitUntilIdle();
-	ClearFrame();
-	DisplayFrameOnly();
+	Eink_ClearFrameMemory(0xFF);
+	Eink_DisplayFrame();
 	Eink_WaitUntilIdle();
 	//Eink_Sleep();
 }
 
-void DisplayBlackFrame(uint8_t * frame_buffer_black) {
-	int i;
-    Eink_SendCommand(DATA_START_TRANSMISSION_1);
-        DelayMs(2);
-        for (i = 0; i < EPD_WIDTH * EPD_HEIGHT / 8; i++) {
-            Eink_SendData(frame_buffer_black[i]);
-        }
-        DelayMs(2);
 
-        Eink_SendCommand(DATA_START_TRANSMISSION_2);
-        DelayMs(2);
-        for (i = 0; i < EPD_WIDTH * EPD_HEIGHT / 8; i++) {
-            Eink_SendData(0xFF);
-        }
-        DelayMs(2);
-		printf("Transmission Complete\n");
-    Eink_SendCommand(DISPLAY_REFRESH);
-    // Eink_WaitUntilIdle(); // No Stall
-		printf("Display Complete\n");
-}
-
-
-void Eink_demo(void) {
-	//Eink_Init();
-	//if(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0) printf("!!!!!!!!!!!!!!!!!!!!!!\n");
-	//uint8_t * dummy_buffer;
-	ClearBuffer();
-	//DrawCharAt(0, 0, 'a', &Font24, 1);
-	DrawStringAt(0, 30, "12.34", &Font24, 3.5, 1);
-	//ClearFrame();
-	DisplayBlackFrame(image_buff);
-	// DisplayFrameOnly();
-}
-
+// }
+// 
+// 
+// void Eink_demo(void) {
+// 	//Eink_Init();
+// 	//if(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0) printf("!!!!!!!!!!!!!!!!!!!!!!\n");
+// 	//uint8_t * dummy_buffer;
+// 	ClearBuffer();
+// 	//DrawCharAt(0, 0, 'a', &Font24, 1);
+// 	DrawStringAt(0, 30, "12.34", &Font24, 3.5, 1);
+// 	//ClearFrame();
+// 	DisplayBlackFrame(image_buff);
+// 	// DisplayFrameOnly();
+// }
+// 
 void Eink_Display_Depth(float depth) {
 	char depth_str[10];
 	int dig = (int)depth;
@@ -336,7 +330,8 @@ void Eink_Display_Depth(float depth) {
 	ClearBuffer();
 	sprintf(depth_str, "%2d.%02d", dig, frac);
 	DrawStringAt(0, 30, depth_str, &Font24, 3.5, 1);
-	DisplayBlackFrame(image_buff);
+	Eink_SetFrameMemory(image_buff);
+	Eink_DisplayFrame();
 }
 
 void Eink_Display_Welcome(char* line1, char* line2, char* line3){
@@ -345,5 +340,6 @@ void Eink_Display_Welcome(char* line1, char* line2, char* line3){
 	DrawStringAt(0, 40, line1, &Font24, 1, 1);
 	DrawStringAt(0, 70, line2, &Font24, 1, 1);
 	DrawStringAt(0, 100, line3, &Font24, 1, 1);
-	DisplayBlackFrame(image_buff);
+	Eink_SetFrameMemory(image_buff);
+	Eink_DisplayFrame();
 }

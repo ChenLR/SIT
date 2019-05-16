@@ -86,6 +86,7 @@ void Sys_Enter_Standby(void)
 	for(i = 0; i < Standby_Funcs_Cnt; i++) {
 		Standby_Funcs[i]();
 	}
+	DelayMs(10);
 	//disable clock;
 	RCC_APB2PeriphResetCmd(0x01fc,DISABLE);//reset
 	Sys_Standby();
@@ -160,8 +161,6 @@ void WKUP_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; 
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; 
 	NVIC_Init(&NVIC_InitStructure);
-	
-	Init_LED_Green();
  
 	if(Check_WKUP()==0) Sys_Standby(); //if not press 2s, still standby
 	DEVICE_ON = 1;
