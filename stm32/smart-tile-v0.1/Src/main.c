@@ -42,8 +42,9 @@ void Device_Setup() {
 	printf("------------------\n");
 	
 	// register standby functions for peripherals
-	Register_Standby_Funcs(LED_7_Seg_Standby);
+	Register_Standby_Funcs(LED_7_Seg_Pre_Standby);
 	Register_Standby_Funcs(Eink_Standby);
+	Register_Standby_Funcs(LED_7_Seg_Standby);
 }
 
 static uint8_t welcome_flag = 1;

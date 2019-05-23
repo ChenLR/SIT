@@ -48,8 +48,11 @@ void Eink_SendData(uint8_t data) {
 
 
 void Eink_WaitUntilIdle() {
-    while(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0) {      //0: busy, 1: idle
+	float time_out = 0;
+	float thresh = 15;
+    while(GPIO_ReadInputDataBit(GPIOA, BUSY_PIN) == 0 && time_out < thresh) {      //0: busy, 1: idle
         DelayMs(100);
+			time_out += 0.1;
     }      
 }
 

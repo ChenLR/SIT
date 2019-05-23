@@ -63,6 +63,10 @@ void LED_7_Seg_Init() {
   LED_7_Seg_SetBrightness(15); // max brightness
 }
 
+void LED_7_Seg_Pre_Standby() { // displays 88.88 to indicate entering standby mode
+	LED_7_Seg_Display(88.88,2,DEC);
+}
+
 void LED_7_Seg_Standby() {
 	LED_7_Seg_Clear();
 	LED_7_Seg_WriteDisplay();
