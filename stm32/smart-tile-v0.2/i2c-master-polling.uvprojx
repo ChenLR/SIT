@@ -400,19 +400,9 @@
               <FilePath>.\Src\usart.c</FilePath>
             </File>
             <File>
-              <FileName>ds1307.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\ds1307.c</FilePath>
-            </File>
-            <File>
               <FileName>ms5803.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\ms5803.c</FilePath>
-            </File>
-            <File>
-              <FileName>led_display.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\led_display.c</FilePath>
             </File>
             <File>
               <FileName>adc.c</FileName>
@@ -455,19 +445,9 @@
               <FilePath>.\Src\usart.h</FilePath>
             </File>
             <File>
-              <FileName>ds1307.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\ds1307.h</FilePath>
-            </File>
-            <File>
               <FileName>ms5803.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Src\ms5803.h</FilePath>
-            </File>
-            <File>
-              <FileName>led_display.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Src\led_display.h</FilePath>
             </File>
             <File>
               <FileName>adc.h</FileName>

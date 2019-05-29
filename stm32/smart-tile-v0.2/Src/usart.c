@@ -17,7 +17,6 @@ _sys_exit(int x)
 }
 
 int fputc(int ch, FILE *f){
-		return 0;
     while((USART1->SR&0X40)==0);
     USART1->DR = (u8) ch;
     return ch;

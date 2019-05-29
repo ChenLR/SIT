@@ -46,7 +46,7 @@ float ADC1_ReadVoltage()
 float ADC1_ReadBattery()
 {
 	// return ADC_GetConversionValue(ADC1);
-	return ADC1_ReadVoltage()/1.87*4.21;
+	return ADC1_ReadVoltage()/2.04*4.09;
 }
 
 void Battery_demo(char* line) {
