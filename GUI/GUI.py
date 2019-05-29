@@ -1,11 +1,11 @@
 from functools import partial
-import tkinter as tk        # 导入 Tkinter 库
+import tkinter as tk
 from tkinter import messagebox
 import serial
 import serial.tools.list_ports
 
 
-# list comports\
+# list comports
 
 cnt = 1
 
@@ -171,4 +171,4 @@ class CommandMenu(object):
 
 
 main_window = MainWindow() 
-main_window.root.mainloop()                 # 进入消息循环
+main_window.root.mainloop()     # enter message loop
