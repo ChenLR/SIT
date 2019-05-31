@@ -12,6 +12,8 @@ void USART1_Init(void);
 
 void USART2_Init(void);
 
+void USART3_Init(void);
+
 int fputc(int ch, FILE *f);
 
 #endif

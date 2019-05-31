@@ -249,10 +249,12 @@ float mbar_to_meter(float pressure) {
 
 static float init_pressure = 0;
 
-float ms5803_getDepth() {
-	float delta_pressure, depth;
+void ms5803_getDepthAndPressure(float * p_depth, float * p_pressure) {
+	float delta_pressure, depth, tmp_pressure;
 	if (init_pressure == 0) init_pressure = ms5803_GetPressure(ADC_4096);
-	delta_pressure = ms5803_GetPressure(ADC_4096) - init_pressure;
+	tmp_pressure = ms5803_GetPressure(ADC_4096);
+	delta_pressure = tmp_pressure - init_pressure;
 	depth = mbar_to_meter(delta_pressure);
-	return depth;
+	*p_depth = depth;
+	*p_pressure = tmp_pressure;
 }

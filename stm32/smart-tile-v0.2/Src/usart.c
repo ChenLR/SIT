@@ -10,19 +10,12 @@ FILE __stdout;
 // Buffer for store received chars
 #define BUF_SIZE	16
 static char buf[BUF_SIZE];
-
-_sys_exit(int x) 
-{ 
-    x = x; 
-}
-
-int fputc(int ch, FILE *f){
-    while((USART1->SR&0X40)==0);
-    USART1->DR = (u8) ch;
-    return ch;
-}
+static uint8_t USART1_STATUS = 0;
+static uint8_t USART2_STATUS = 0;
+static uint8_t USART3_STATUS = 0;
 
 
+// ====================== USART1 ======================
 
 void USART1_Init()
 {
@@ -67,6 +60,8 @@ void USART1_Init()
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStruct);
+	
+	USART1_STATUS = 1;
 }
 
 
@@ -107,14 +102,9 @@ void USART1_IRQHandler()
 			}
 		}
 		else
-		{
-			// Display received string to LCD
-			// lcd16x2_clrscr();
-			// lcd16x2_puts(buf);
-			
+		{			
 			// Echo received string to USART1
 			printf("%s\n", buf);
-			
 			// Clear buffer
 			memset(&buf[0], 0, sizeof(buf));
 			i = 0;
@@ -122,6 +112,8 @@ void USART1_IRQHandler()
 	}
 }
 
+
+// ====================== USART2 ======================
 
 void USART2_Init()
 {
@@ -167,6 +159,8 @@ void USART2_Init()
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStruct);
+	
+	USART2_STATUS = 1;
 }
 
 
@@ -207,17 +201,134 @@ void USART2_IRQHandler()
 			}
 		}
 		else
-		{
-			// Display received string to LCD
-			// lcd16x2_clrscr();
-			// lcd16x2_puts(buf);
-			
-			// Echo received string to USART2
+		{			
+			// Echo received string to USART1
 			printf("%s\n", buf);
-			
 			// Clear buffer
 			memset(&buf[0], 0, sizeof(buf));
 			i = 0;
 		}
 	}
+}
+
+
+// ====================== USART3 ======================
+
+void USART3_Init()
+{
+	// Initialization struct
+	USART_InitTypeDef USART_InitStruct;
+	GPIO_InitTypeDef GPIO_InitStruct;
+	NVIC_InitTypeDef NVIC_InitStruct;
+	
+	// Step 1: Initialize USART3
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+	USART_InitStruct.USART_BaudRate = 9600;
+	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+	USART_InitStruct.USART_Parity = USART_Parity_No;
+	USART_InitStruct.USART_StopBits = USART_StopBits_1;
+	USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+	USART_Init(USART3, &USART_InitStruct);
+	USART_Cmd(USART3, ENABLE);
+	
+	// Step 2: Initialize GPIO for Tx and Rx pin
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	// Tx pin (PB10) initialization as push-pull alternate function
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+	// Rx pin (PB11) initialization as input floating
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+	
+	// Step 3: Enable USART receive interrupt
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+	
+	// Step 4: Initialize NVIC for USART IRQ
+	// Set NVIC prority group to group 4 
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	// Set System Timer IRQ at higher priority
+	NVIC_SetPriority(SysTick_IRQn, 0);
+	// Set USART3 IRQ at lower priority
+	NVIC_InitStruct.NVIC_IRQChannel = USART3_IRQn;
+	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStruct);
+	
+	USART3_STATUS = 1;
+}
+
+
+void USART3_PutChar(char c)
+{
+	// Wait until transmit data register is empty
+	while (!USART_GetFlagStatus(USART3, USART_FLAG_TXE));
+	// Send a char using USART3
+	USART_SendData(USART3, c);
+}
+
+
+void USART3_IRQHandler()
+{
+	// Check if the USART3 receive interrupt flag was set
+	if (USART_GetITStatus(USART3, USART_IT_RXNE))
+	{
+		// Index for receive buffer
+		static uint8_t i = 0;
+		
+		// Read received char
+		char c = USART_ReceiveData(USART3);
+		
+		// Read chars until newline
+		if (c != '\n')
+		{
+			// Concat char to buffer
+			// If maximum buffer size is reached, then reset i to 0
+			if (i < BUF_SIZE - 1)
+			{
+				buf[i] = c;
+				i++;
+			}
+			else
+			{
+				buf[i] = c;
+				i = 0;
+			}
+		}
+		else
+		{			
+			// Echo received string to USART1
+			printf("%s\n", buf);
+			// Clear buffer
+			memset(&buf[0], 0, sizeof(buf));
+			i = 0;
+		}
+	}
+}
+
+
+// ====================== Printf ======================
+
+_sys_exit(int x) 
+{ 
+    x = x; 
+}
+
+int fputc(int ch, FILE *f){
+	if(USART1_STATUS) {
+    USART1_PutChar(ch);
+	}
+	
+	if(USART2_STATUS) {
+    USART2_PutChar(ch);
+	}
+	
+	if(USART3_STATUS) {
+		USART3_PutChar(ch);
+	}
+    return ch;
 }

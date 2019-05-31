@@ -189,7 +189,7 @@ void DrawAbsolutePixel(int x, int y, int colored) {
 
 void DrawPixel(int x, int y, int colored) {
     int point_temp;
-	int rotate = ROTATE_90;
+	int rotate = ROTATE_270;
     if (rotate == ROTATE_0) {
         if(x < 0 || x >= width || y < 0 || y >= height) {
             return;
@@ -334,12 +334,16 @@ void Eink_Display_Depth(float depth) {
 	Eink_DisplayFrame();
 }
 
-void Eink_Display_Welcome(char* line1, char* line2, char* line3){
+void Eink_Display_Welcome(float pressure, float depth, float battery){
+	char line[30];
 	ClearBuffer();
-	DrawStringAt(0, 0, "SIT  Ver 0.1", &Font24, 1.2, 1);
-	DrawStringAt(0, 40, line1, &Font24, 1, 1);
-	DrawStringAt(0, 70, line2, &Font24, 1, 1);
-	DrawStringAt(0, 100, line3, &Font24, 1, 1);
+	
+	DrawStringAt(0, 0, "SIT  Ver 0.2", &Font24, 1.2, 1);
+	// DrawStringAt(0, 40, line1, &Font24, 1, 1);
+	// DrawStringAt(0, 70, line2, &Font24, 1, 1);
+	sprintf(line, "Vbatt %.4fV", battery);
+	DrawStringAt(0, 100, line, &Font24, 1, 1);
+	
 	Eink_SetFrameMemory(image_buff);
 	Eink_DisplayFrame();
 }

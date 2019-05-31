@@ -26,45 +26,54 @@ void Device_Setup() {
 	USART1_Init();
 	printf("##################\n");
 	printf("USART1 Initialized\n");
+	USART3_Init();
+	printf("USART3 Initialized\n");
 	Eink_Init();
 	printf("Eink Display Initialized\n");
 	ADC1_Init();
 	printf("ADC1 Initialized\n");
-	// ms5803_Init(ADDRESS_HIGH);
-	// printf("Depth Sensor Initialized\n");
-	// printf("------------------\n");
-	// printf("All Peripherals Initialized\n");
-	// printf("------------------\n");
+	ms5803_Init(ADDRESS_HIGH);
+	printf("Depth Sensor Initialized\n");
+	printf("------------------\n");
+	printf("All Peripherals Initialized\n");
 	
 	// register standby functions for peripherals
-	// Register_Standby_Funcs(LED_7_Seg_Pre_Standby);
 	Register_Standby_Funcs(Eink_Standby);
-	// Register_Standby_Funcs(LED_7_Seg_Standby);
 }
 
-static uint8_t welcome_flag = 0;
+void print_sensor_data(float pressure, float depth, float battery) {
+	printf("--------\n");
+	printf("pressure  %.1f\n", pressure);
+	printf("Vbatt     %.4fV\n", battery);
+}
+
+static uint8_t welcome_flag = 1;
 
 int main(void)
 {
 	int cnt_100ms = 0;
-	float depth = 12.34;
-	char line1[30], line2[30], line3[30];
+	
+	// sensor data
+	float pressure = -1.11, depth = -1.11, battery = -1.11;
 	
 	Device_Setup();
 
 	while (1)
 	{
+		// update data
 		if(!(cnt_100ms % 5)) Toggle_LED_Green(); // 0.5s
-		// if(!(cnt_100ms % 20)) depth = ms5803_getDepth();		// 1s
-		if(!(cnt_100ms % 20)) Battery_demo(line3);		// 2s
-		if(!(cnt_100ms % 300)) {						// 30s
+		if(!(cnt_100ms % 10)) ms5803_getDepthAndPressure(&depth, &pressure);    // 1s
+		if(!(cnt_100ms % 10)) battery = ADC1_ReadBattery();                     // 1s
+		// display or transmit
+		if(!(cnt_100ms % 30)) print_sensor_data(pressure, depth, battery);      // 3s
+		if(!(cnt_100ms % 100)) {		                                            // 10s
 			if(welcome_flag) {
 				welcome_flag = 0;
-				Eink_Display_Welcome(line1, line2, line3);
+				Eink_Display_Welcome(pressure, depth, battery);
 			}
 			else Eink_Display_Depth(depth);
 		}
-		
+		// prevent overflow
 		if(!(cnt_100ms % 6000)) cnt_100ms = 0;
 
 		cnt_100ms++;

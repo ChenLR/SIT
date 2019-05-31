@@ -21,14 +21,14 @@ void ADC1_Init()
 	ADC_Init(ADC1, &ADC_InitStruct);
 	ADC_Cmd(ADC1, ENABLE);
 	// Select input channel for ADC1
-	// ADC1 channel 8 (PB0)
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 1, ADC_SampleTime_55Cycles5);
+	// ADC1 channel 6 (PA6)
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 1, ADC_SampleTime_55Cycles5);
 	
-	// Step 2: Initialize GPIOB (PB0)
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	// Step 2: Initialize GPIOB (PA6)
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AIN;
-	GPIO_Init(GPIOB, &GPIO_InitStruct);
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 float ADC1_ReadVoltage()
@@ -47,9 +47,4 @@ float ADC1_ReadBattery()
 {
 	// return ADC_GetConversionValue(ADC1);
 	return ADC1_ReadVoltage()/2.04*4.09;
-}
-
-void Battery_demo(char* line) {
-	sprintf(line, "Vbatt %.4fV", ADC1_ReadBattery());
-	printf("%s\n", line);
 }

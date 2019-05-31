@@ -42,6 +42,6 @@ void Eink_Standby(void);
 
 void Eink_demo(void);
 void Eink_Display_Depth(float depth);
-void Eink_Display_Welcome(char* line1, char* line2, char* line3);
+void Eink_Display_Welcome(float pressure, float depth, float battery);
 
 #endif
