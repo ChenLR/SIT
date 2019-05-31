@@ -1,75 +1,13 @@
 from functools import partial
 import tkinter as tk
 from tkinter import messagebox
-import serial
-import serial.tools.list_ports
+
+from PortManager import PortManager
 
 
 # list comports
 
 cnt = 1
-
-class PortManager(object):
-    def __init__(self, root):
-        self.root = root
-        self.port_list = []
-        self.port_status_list = []
-        self.ser = None
-        self.ser_idx = -1
-        self.refreshList()
-
-    def disconnectAllPorts(self):
-        if self.ser is not None:
-            try:
-                self.ser.close()
-            except:
-                tk.messagebox.showwarning(title='Warning', message='Close Port Failed')
-            self.ser = None
-            self.ser_idx = -1
-
-        for idx, port in enumerate(self.port_list):
-            status = self.port_status_list[idx]
-            if status:
-                # disconnect this port
-                status.set(False)
-
-    def connectPort(self, idx):
-        if self.ser is not None:
-            return
-        port = self.port_list[idx].device
-        baudRate=9600
-        try:
-            ser = serial.Serial(port,baudRate)
-        except:
-            tk.messagebox.showwarning(title='Warning', message='{} is occupied'.format(port))
-            status = self.port_status_list[idx]
-            status.set(False)
-            return
-        if not ser.isOpen():
-            ser.open()
-        if ser.isOpen(): 
-            self.ser = ser
-            self.ser_idx = idx
-            status = self.port_status_list[idx]
-            status.set(True)
-        else:
-            status = self.port_status_list[idx]
-            status.set(False)
-            tk.messagebox.showwarning(title='Warning', message='Failed to open {}'.format(port))
-
-    def refreshList(self):
-        port_list = list(serial.tools.list_ports.comports())
-        self.port_list = [item for item in port_list if 'Serial' in item.description]
-        self.port_status_list = [tk.BooleanVar() for _ in self.port_list]
-
-    def sendMessage(self, message):
-        if self.ser.isOpen():
-            try:
-                self.ser.write(message.encode())
-            except:
-                tk.messagebox.showwarning(title='Warning', message='Transmission Failed')
-
-
 
 
 class MainWindow(object):
@@ -81,7 +19,7 @@ class MainWindow(object):
 
         """
         self.root =tk.Tk() 
-        self.port_manager = PortManager(self.root)
+        self.port_manager = PortManager(tk.BooleanVar, tk.messagebox.showwarning)
         self.opt = self.initLayout(self.root)
         self.menubar = self.initMenubar(self.root)
 
@@ -118,6 +56,9 @@ class MainWindow(object):
         self.opt.config(text='do job {}'.format(cnt))
         cnt += 1
 
+    def onExit(self):
+        self.port_manager.disconnectAllPorts()
+        self.root.quit()
 
 
 class FileMenu(object):
@@ -128,7 +69,7 @@ class FileMenu(object):
         filemenu.add_command(label='Open', command=main_window.doJobCallBack)
         filemenu.add_command(label='Save', command=main_window.doJobCallBack)
         filemenu.add_separator()
-        filemenu.add_command(label='Exit', command=main_window.root.quit) 
+        filemenu.add_command(label='Exit', command=main_window.onExit) 
 
 
 
@@ -151,15 +92,15 @@ class PortMenu(object):
 
         self.portmenu.delete(2, 'end')
         for idx, port in enumerate(self.port_manager.port_list):
-            self.portmenu.add_checkbutton(label="{}".format(port.description), onvalue=1, offvalue=0, 
+            self.portmenu.add_checkbutton(label="{}".format(port.device), onvalue=1, offvalue=0, 
                     variable=self.port_manager.port_status_list[idx], command=partial(self.connectCallBack, idx))
         self.main_window.opt.config(text='port refreshed')
 
     # Callbacks
     def connectCallBack(self, idx):
         self.port_manager.disconnectAllPorts()
-        self.port_manager.connectPort(idx)
-        self.main_window.opt.config(text='connect comport {}'.format(idx))
+        if self.port_manager.connectPort(idx):
+            self.main_window.opt.config(text='comport {} connected'.format(idx))
 
 
 class CommandMenu(object):
