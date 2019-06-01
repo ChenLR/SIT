@@ -23,8 +23,8 @@ void Eink_WaitUntilIdle(void);
 void Eink_Reset() {
     GPIO_ResetBits(GPIOA, RST_PIN);
     DelayMs(200);
-		GPIO_SetBits(GPIOA, RST_PIN);
-    DelayMs(200);   
+	GPIO_SetBits(GPIOA, RST_PIN);
+    DelayMs(200);
 }
 
 
@@ -37,15 +37,15 @@ void Eink_Sleep() {
 
 void Eink_SendCommand(uint8_t command) {
 	GPIO_ResetBits(GPIOA, DC_PIN);
-  //DigitalWrite(dc_pin, LOW);
-  SPIx_Transfer(command);
+    //DigitalWrite(dc_pin, LOW);
+    SPIx_Transfer(command);
 }
 
 
 void Eink_SendData(uint8_t data) {
     GPIO_SetBits(GPIOA, DC_PIN);
-  //DigitalWrite(dc_pin, HIGH);
-  SPIx_Transfer(data);
+    //DigitalWrite(dc_pin, HIGH);
+    SPIx_Transfer(data);
 }
 
 const unsigned char lut_full_update[] =
@@ -301,10 +301,13 @@ void Eink_Init(void) {
 
 void Eink_Standby(void) {
 	Eink_WaitUntilIdle();
+	Eink_ClearFrameMemory(0x00);
+	Eink_DisplayFrame();
+	Eink_WaitUntilIdle();
 	Eink_ClearFrameMemory(0xFF);
 	Eink_DisplayFrame();
 	Eink_WaitUntilIdle();
-	//Eink_Sleep();
+	Eink_Sleep();
 }
 
 

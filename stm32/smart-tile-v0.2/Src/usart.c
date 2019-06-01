@@ -317,35 +317,29 @@ void USART3_IRQHandler()
 
 _sys_exit(int x) 
 { 
-    x = x; 
+    // x = x;
 }
 
-int fputc(int ch, FILE *f){
+void putCharToPorts(int ch) {
 	if(USART1_STATUS) {
-    USART1_PutChar(ch);
+	USART1_PutChar(ch);
 	}
 	
 	if(USART2_STATUS) {
-    USART2_PutChar(ch);
+	USART2_PutChar(ch);
 	}
 	
 	if(USART3_STATUS) {
 		USART3_PutChar(ch);
 	}
+}
+
+int fputc(int ch, FILE *f){
+	putCharToPorts(ch);
     return ch;
 }
 
 int __io_putchar(int ch) {
-	if(USART1_STATUS) {
-	    USART1_PutChar(ch);
-		}
-
-		if(USART2_STATUS) {
-	    USART2_PutChar(ch);
-		}
-
-		if(USART3_STATUS) {
-			USART3_PutChar(ch);
-		}
-	    return ch;
+	putCharToPorts(ch);
+	return ch;
 }

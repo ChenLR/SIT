@@ -1,7 +1,4 @@
-#include "stm32f10x.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_gpio.h"
-
+#include "main.h"
 #include "wkup.h"
 #include "delay.h"
 #include "usart.h"
@@ -51,22 +48,31 @@ static uint8_t welcome_flag = 1;
 
 int main(void)
 {
+	// clock for tasks
 	int cnt_100ms = 0;
 	
 	// sensor data
 	float pressure = -1.11, depth = -1.11, battery = -1.11;
 	
+	// initialization
 	Device_Setup();
 
 	while (1)
 	{
 		// update data
-		if(!(cnt_100ms % 5)) Toggle_LED_Green(); // 0.5s
-		if(!(cnt_100ms % 10)) ms5803_getDepthAndPressure(&depth, &pressure);    // 1s
-		if(!(cnt_100ms % 10)) battery = ADC1_ReadBattery();                     // 1s
-		// display or transmit
-		if(!(cnt_100ms % 30)) print_sensor_data(pressure, depth, battery);      // 3s
-		if(!(cnt_100ms % 100)) {		                                            // 10s
+		if(!(cnt_100ms % PERIOD_LED)) Toggle_LED_Green();
+		if(!(cnt_100ms % PERIOD_DEPTH)) ms5803_getDepthAndPressure(&depth, &pressure);
+		if(!(cnt_100ms % PERIOD_BATT)) battery = ADC1_ReadBattery();
+		// transmit
+		if(!(cnt_100ms % PERIOD_PRINT_SENSOR)) print_sensor_data(pressure, depth, battery);
+		// display
+		if(cnt_100ms % PERIOD_EINK == PERIOD_EINK - 20) {
+			// 2s before display digits
+			// clear the screen to prevent from burning
+			Eink_ClearFrameMemory(0xFF);
+			Eink_DisplayFrame();
+		}
+		if(!(cnt_100ms % PERIOD_EINK)) {
 			if(welcome_flag) {
 				welcome_flag = 0;
 				Eink_Display_Welcome(pressure, depth, battery);
@@ -74,7 +80,7 @@ int main(void)
 			else Eink_Display_Depth(depth);
 		}
 		// prevent overflow
-		if(!(cnt_100ms % 6000)) cnt_100ms = 0;
+		if(!(cnt_100ms % PERIOD_OVERALL)) cnt_100ms = 0;
 
 		cnt_100ms++;
 		DelayMs(100);
