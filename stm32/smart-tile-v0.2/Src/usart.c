@@ -1,10 +1,12 @@
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_usart.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "usart.h"
 
-#pragma import(__use_no_semihosting)                             
+#pragma import(__use_no_semihosting)
 FILE __stdout;
 
 // Buffer for store received chars
@@ -331,4 +333,19 @@ int fputc(int ch, FILE *f){
 		USART3_PutChar(ch);
 	}
     return ch;
+}
+
+int __io_putchar(int ch) {
+	if(USART1_STATUS) {
+	    USART1_PutChar(ch);
+		}
+
+		if(USART2_STATUS) {
+	    USART2_PutChar(ch);
+		}
+
+		if(USART3_STATUS) {
+			USART3_PutChar(ch);
+		}
+	    return ch;
 }
