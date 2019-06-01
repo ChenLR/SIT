@@ -81,3 +81,4 @@
 # add SW4STM32 ignore
 /Debug/
 /.settings/
+/*.cfg
