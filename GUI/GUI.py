@@ -19,7 +19,10 @@ class MainWindow(object):
 
         """
         self.root =tk.Tk() 
-        self.port_manager = PortManager(tk.BooleanVar, tk.messagebox.showwarning)
+        self.port_manager = PortManager(
+                status_intf = tk.BooleanVar, 
+                warning_intf = tk.messagebox.showwarning,
+                data_handler = self.handle_data)
         self.opt = self.initLayout(self.root)
         self.menubar = self.initMenubar(self.root)
 
@@ -55,6 +58,10 @@ class MainWindow(object):
         global cnt
         self.opt.config(text='do job {}'.format(cnt))
         cnt += 1
+
+    def handle_data(self, data):
+        if len(data):
+            self.opt.config(text='Recv: {}'.format(data.decode()))
 
     def onExit(self):
         self.port_manager.disconnectAllPorts()

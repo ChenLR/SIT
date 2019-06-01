@@ -1,5 +1,7 @@
 import serial
 import serial.tools.list_ports
+import threading
+import time
 
 class booleanStatus(object):
     def __init__(self, val=False):
@@ -12,29 +14,50 @@ class booleanStatus(object):
         self.__val__ = val
 
 class PortManager(object):
-    def __init__(self, status_intf=booleanStatus, warning_intf=None):
+    def __init__(self, status_intf=booleanStatus, warning_intf=None, data_handler=None):
         # self.root = root
         self.port_list = []
         self.port_status_list = []
-        self.ser = None
-        self.ser_idx = -1
-        self.status_intf = status_intf
-        if warning_intf is not None:
-            self.warning_intf = warning_intf
-        else:
-            self.warning_intf = self.showWarning
+        self.__ser = None
+        self.__ser_idx = -1
+        self.__status_intf = status_intf
+        self.__warning_intf = warning_intf if warning_intf is not None else self.__showWarning
+        self.__data_handler = data_handler if data_handler is not None else self.__handle_data
+        self.__read_thread = None
         self.refreshList()
 
-    def disconnectAllPorts(self):
-        if self.ser is not None:
+    def __showWarning(self, title, message):
+        print("Warning! Title: {}, Message: {}".format(title, message))
+
+    def __handle_data(self, data):
+        if len(data):
+            print(data.decode(), end =" ")
+
+    def __read_from_port(self):
+        while True:
             try:
-                self.ser.close()
+                data = self.__ser.read()
+                self.__data_handler(data)
             except:
-                self.warning_intf(title='Warning', message='Close port failed')
-            if self.ser.isOpen():
-                self.warning_intf(title='Warning', message='Port still open')
-            self.ser = None
-            self.ser_idx = -1
+                break
+
+    def disconnectAllPorts(self):
+        if self.__ser is not None:
+            try:
+                self.__ser.close()
+            except:
+                self.__warning_intf(title='Warning', message='Close port failed')
+            # post check
+            if self.__ser.isOpen():
+                self.__warning_intf(title='Warning', message='Port still open')
+                return
+            time.sleep(0.1)
+            if self.__read_thread.isAlive():
+                self.__warning_intf(title='Warning', message='Reading thread is still alive')
+                return
+            self.__read_thread = None
+            self.__ser = None
+            self.__ser_idx = -1
 
         for idx, port in enumerate(self.port_list):
             status = self.port_status_list[idx]
@@ -43,42 +66,41 @@ class PortManager(object):
                 status.set(False)
 
     def connectPort(self, idx):
-        if self.ser is not None:
+        if self.__ser is not None:
             return
         port = self.port_list[idx].device
         baudRate=9600
         try:
-            ser = serial.Serial(port,baudRate)
+            ser = serial.Serial(port,baudRate, timeout=0)
         except: # port occupied by other program
-            self.warning_intf(title='Warning', message='{} is occupied'.format(port))
+            self.__warning_intf(title='Warning', message='{} is occupied'.format(port))
             status = self.port_status_list[idx]
             status.set(False)
             return 0
         if ser.isOpen(): 
-            self.ser = ser
-            self.ser_idx = idx
+            self.__ser = ser
+            self.__ser_idx = idx
             status = self.port_status_list[idx]
             status.set(True)
+            self.__read_thread = threading.Thread(target=self.__read_from_port, args=())
+            self.__read_thread.start()
             return 1
         else:
             status = self.port_status_list[idx]
             status.set(False)
-            self.warning_intf(title='Warning', message='Failed to open {}'.format(port))
+            self.__warning_intf(title='Warning', message='Failed to open {}'.format(port))
             return 0
 
     def refreshList(self):
         port_list = list(serial.tools.list_ports.comports())
         self.port_list = [item for item in port_list if 'Serial' in item.description or "usbserial" in item.device]
-        self.port_status_list = [self.status_intf() for _ in self.port_list]
+        self.port_status_list = [self.__status_intf() for _ in self.port_list]
 
     def sendMessage(self, message):
-        if self.ser is not None and self.ser.isOpen():
+        if self.__ser is not None and self.__ser.isOpen():
             try:
-                self.ser.write(message.encode())
+                self.__ser.write(message.encode())
             except:
-                self.warning_intf(title='Warning', message='Transmission failed')
+                self.__warning_intf(title='Warning', message='Transmission failed')
         else:
-            self.warning_intf(title='Warning', message='Port is not open')
-                
-    def showWarning(self, title, message):
-        print("Warning! Title: {}, Message: {}".format(title, message))
+            self.__warning_intf(title='Warning', message='Port is not open')
