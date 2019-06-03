@@ -127,5 +127,5 @@ class Protocal(object):
         return True
 
     def printAsHex(self, frame):
-        print('[{}]'.format(', '.join(hex(x) for x in frame)))
+        print(" ".join(["{:02x}".format(item) for item in frame]))
 

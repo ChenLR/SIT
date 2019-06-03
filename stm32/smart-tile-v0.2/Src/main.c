@@ -6,14 +6,15 @@
 #include "ms5803.h"
 #include "adc.h"
 #include "eink.h"
+#include "fonts.h"
 
 // PA9:		Tx
 // PA10:	Rx
 // PB10:	SCL
 // PB11:	SDA
+extern int RECV_CNT;
 
-
-void Device_Setup() {
+void deviceSetup() {
 	// wake up if pressed more than 2s
 	DelayInit();
 	Init_LED_Green();
@@ -38,13 +39,32 @@ void Device_Setup() {
 	Register_Standby_Funcs(Eink_Standby);
 }
 
-void print_sensor_data(float pressure, float depth, float battery) {
+void printSensorData(float pressure, float depth, float battery) {
 	printf("--------\n");
 	printf("pressure  %.1f\n", pressure);
 	printf("Vbatt     %.4fV\n", battery);
+	printf("received  %d\n", RECV_CNT);
 }
 
-static uint8_t welcome_flag = 1;
+void einkUserLogic(float pressure, float depth, float battery) {
+	static uint8_t welcome_flag = 1;
+	if(welcome_flag) {
+		welcome_flag = 0;
+		Eink_Display_Welcome(pressure, depth, battery);
+	}
+	else {
+		char line[30];
+		ClearBuffer();
+		DrawStringAt(0, 0, "SIT  Debugging", &Font24, 1.2, 1);
+		sprintf(line, "Recv %d", RECV_CNT);
+		DrawStringAt(0, 40, line, &Font24, 1, 1);
+		sprintf(line, "Pressure  %.1f", pressure);
+		DrawStringAt(0, 70, line, &Font24, 1, 1);
+		sprintf(line, "Vbatt %.4fV", battery);
+		DrawStringAt(0, 100, line, &Font24, 1, 1);
+		Eink_SetAndDisplay();
+	}
+}
 
 int main(void)
 {
@@ -55,7 +75,7 @@ int main(void)
 	float pressure = -1.11, depth = -1.11, battery = -1.11;
 	
 	// initialization
-	Device_Setup();
+	deviceSetup();
 
 	while (1)
 	{
@@ -64,7 +84,7 @@ int main(void)
 		if(!(cnt_100ms % PERIOD_DEPTH)) ms5803_getDepthAndPressure(&depth, &pressure);
 		if(!(cnt_100ms % PERIOD_BATT)) battery = ADC1_ReadBattery();
 		// transmit
-		if(!(cnt_100ms % PERIOD_PRINT_SENSOR)) print_sensor_data(pressure, depth, battery);
+		if(!(cnt_100ms % PERIOD_PRINT_SENSOR)) printSensorData(pressure, depth, battery);
 		// display
 		if(cnt_100ms % PERIOD_EINK == PERIOD_EINK - 20) {
 			// 2s before display digits
@@ -73,11 +93,7 @@ int main(void)
 			Eink_DisplayFrame();
 		}
 		if(!(cnt_100ms % PERIOD_EINK)) {
-			if(welcome_flag) {
-				welcome_flag = 0;
-				Eink_Display_Welcome(pressure, depth, battery);
-			}
-			else Eink_Display_Depth(depth);
+			einkUserLogic(pressure, depth, battery);
 		}
 		// prevent overflow
 		if(!(cnt_100ms % PERIOD_OVERALL)) cnt_100ms = 0;

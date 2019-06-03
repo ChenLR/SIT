@@ -2,7 +2,6 @@
 #include "delay.h"
 #include "spi.h"
 #include "eink.h"
-#include "fonts.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -333,8 +332,7 @@ void Eink_Display_Depth(float depth) {
 	ClearBuffer();
 	sprintf(depth_str, "%2d.%02d", dig, frac);
 	DrawStringAt(0, 30, depth_str, &Font24, 3.5, 1);
-	Eink_SetFrameMemory(image_buff);
-	Eink_DisplayFrame();
+	Eink_SetAndDisplay();
 }
 
 void Eink_Display_Welcome(float pressure, float depth, float battery){
@@ -346,7 +344,10 @@ void Eink_Display_Welcome(float pressure, float depth, float battery){
 	// DrawStringAt(0, 70, line2, &Font24, 1, 1);
 	sprintf(line, "Vbatt %.4fV", battery);
 	DrawStringAt(0, 100, line, &Font24, 1, 1);
-	
+	Eink_SetAndDisplay();
+}
+
+void Eink_SetAndDisplay() {
 	Eink_SetFrameMemory(image_buff);
 	Eink_DisplayFrame();
 }

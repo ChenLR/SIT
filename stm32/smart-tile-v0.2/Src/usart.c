@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "usart.h"
+#include "protocal.h"
 
-#pragma import(__use_no_semihosting)
+// #pragma import(__use_no_semihosting)
 FILE __stdout;
 
 // Buffer for store received chars
@@ -15,6 +16,37 @@ static char buf[BUF_SIZE];
 static uint8_t USART1_STATUS = 0;
 static uint8_t USART2_STATUS = 0;
 static uint8_t USART3_STATUS = 0;
+
+// ====================== Handler =====================
+
+void echoHandler(char c) {
+	// Index for receive buffer
+	static uint8_t i = 0;
+	// Read chars until newline
+	if (c != '\n')
+	{
+		// Concat char to buffer
+		// If maximum buffer size is reached, then reset i to 0
+		if (i < BUF_SIZE - 1)
+		{
+			buf[i] = c;
+			i++;
+		}
+		else
+		{
+			buf[i] = c;
+			i = 0;
+		}
+	}
+	else
+	{
+		// Echo received string to USART1
+		printf("%s\n", buf);
+		// Clear buffer
+		memset(&buf[0], 0, sizeof(buf));
+		i = 0;
+	}
+}
 
 
 // ====================== USART1 ======================
@@ -28,7 +60,7 @@ void USART1_Init()
 	
 	// Step 1: Initialize USART1
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA, ENABLE);
-	USART_InitStruct.USART_BaudRate = 9600;
+	USART_InitStruct.USART_BaudRate = USART_BD_RATE;
 	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_InitStruct.USART_Parity = USART_Parity_No;
@@ -126,7 +158,7 @@ void USART2_Init()
 	
 	// Step 1: Initialize USART2
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	USART_InitStruct.USART_BaudRate = 9600;
+	USART_InitStruct.USART_BaudRate = USART_BD_RATE;
 	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_InitStruct.USART_Parity = USART_Parity_No;
@@ -225,7 +257,7 @@ void USART3_Init()
 	
 	// Step 1: Initialize USART3
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-	USART_InitStruct.USART_BaudRate = 9600;
+	USART_InitStruct.USART_BaudRate = USART_BD_RATE;
 	USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_InitStruct.USART_Parity = USART_Parity_No;
@@ -279,36 +311,10 @@ void USART3_IRQHandler()
 	// Check if the USART3 receive interrupt flag was set
 	if (USART_GetITStatus(USART3, USART_IT_RXNE))
 	{
-		// Index for receive buffer
-		static uint8_t i = 0;
-		
 		// Read received char
 		char c = USART_ReceiveData(USART3);
-		
-		// Read chars until newline
-		if (c != '\n')
-		{
-			// Concat char to buffer
-			// If maximum buffer size is reached, then reset i to 0
-			if (i < BUF_SIZE - 1)
-			{
-				buf[i] = c;
-				i++;
-			}
-			else
-			{
-				buf[i] = c;
-				i = 0;
-			}
-		}
-		else
-		{			
-			// Echo received string to USART1
-			printf("%s\n", buf);
-			// Clear buffer
-			memset(&buf[0], 0, sizeof(buf));
-			i = 0;
-		}
+		// echoHandler(c);
+		recvByteHandler(c);
 	}
 }
 

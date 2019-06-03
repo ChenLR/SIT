@@ -4,6 +4,8 @@
 #include "stm32f10x.h"
 #include <stdio.h>
 
+#define USART_BD_RATE 38400
+
 struct __FILE { 
     int handle; 
 };
