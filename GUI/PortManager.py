@@ -14,10 +14,11 @@ class booleanStatus(object):
         self.__val__ = val
 
 class PortManager(object):
-    def __init__(self, status_intf=booleanStatus, warning_intf=None, data_handler=None):
+    def __init__(self, status_intf=booleanStatus, warning_intf=None, data_handler=None, baud_rates=9600):
         # self.root = root
         self.port_list = []
         self.port_status_list = []
+        self.__baud_rates = baud_rates
         self.__ser = None
         self.__ser_idx = -1
         self.__status_intf = status_intf
@@ -29,15 +30,15 @@ class PortManager(object):
     def __showWarning(self, title, message):
         print("Warning! Title: {}, Message: {}".format(title, message))
 
-    def __handle_data(self, data):
-        if len(data):
-            print(data.decode(), end =" ")
+    def __handle_data(self, byte):
+        print(hex(byte), end =" ")
 
     def __read_from_port(self):
         while True:
             try:
                 data = self.__ser.read()
-                self.__data_handler(data)
+                for byte in data:
+                    self.__data_handler(byte)
             except:
                 break
 
@@ -69,9 +70,9 @@ class PortManager(object):
         if self.__ser is not None:
             return
         port = self.port_list[idx].device
-        baudRate=9600
         try:
-            ser = serial.Serial(port,baudRate, timeout=0)
+            print("BD rate: {}".format(self.__baud_rates))
+            ser = serial.Serial(port,self.__baud_rates, timeout=0)
         except: # port occupied by other program
             self.__warning_intf(title='Warning', message='{} is occupied'.format(port))
             status = self.port_status_list[idx]
@@ -100,6 +101,15 @@ class PortManager(object):
         if self.__ser is not None and self.__ser.isOpen():
             try:
                 self.__ser.write(message.encode())
+            except:
+                self.__warning_intf(title='Warning', message='Transmission failed')
+        else:
+            self.__warning_intf(title='Warning', message='Port is not open')
+
+    def sendByteList(self, byte_list):
+        if self.__ser is not None and self.__ser.isOpen():
+            try:
+                self.__ser.write(byte_list)
             except:
                 self.__warning_intf(title='Warning', message='Transmission failed')
         else:

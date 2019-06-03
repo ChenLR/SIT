@@ -3,35 +3,83 @@ class Protocal(object):
     """
     0x0D 0x0A length data_0 data_1 ... sum (sum starts from length)
     """
-    def __init__(self, package_handler=None):
+    def __init__(self, recv_package_handler=None):
         self.max_package_length = 20
         self.__max_frame_length = 45
+        self.__max_buffer_length = self.__max_frame_length - 4 # exclude header, length and sum
         self.__first_byte = 0x0D
         self.__second_byte = 0x0A
         self.__pad_byte = 0x50
         # below used by recvByteHandler 
-        self.__package_handler = package_handler if package_handler is not None else self.packageHandler
-        self.__recvBuffer = []
-        self.__first_byte_trigger = False
-        self.__second_byte_trigger = False
+        self.__recv_package_handler = recv_package_handler if recv_package_handler is not None else self.__recvPackageHandler
+        self.__recv_state = 0 # 0 is idle, 1 is waiting for length, 2 is normal receiving
+        self.__recv_buffer = []
+        self.__recv_last_byte = 0x00
+        self.__recv_length = 0
+        return
 
-        pass
+    # Receiving
+
+    def __recvIdleStatus(self):
+        self.__recv_state = 0 # 0 is idle, 1 is waiting for length, 2 is normal receiving
+        self.__recv_buffer = []
+        self.__recv_length = 0
 
     def recvByteHandler(self, byte):
-        # TODO
-        self.__recvBuffer.append(byte)
-        if byte == self.__first_byte:
-            self.__first_byte_trigger = True
-            self.__second_byte_trigger = False
+        if self.__recv_state == 0:
+            if self.__recv_last_byte == self.__first_byte and byte == self.__second_byte:
+                self.__recv_state = 1
+                self.__recv_buffer.clear()
+            else:
+                self.__recvIdleStatus()
+        elif self.__recv_state == 1:
+            assert self.__recv_last_byte == self.__second_byte, "last byte not matching to {}".format(self.__second_byte)
+            self.__recv_state = 2
+            self.__recv_buffer.clear()
+            self.__recv_length = byte
+        elif self.__recv_state == 2:
+            if self.__recv_last_byte == self.__first_byte and byte == self.__second_byte:
+                self.__recv_state = 1
+                self.__recv_buffer.clear()
+            else:
+                if len(self.__recv_buffer) < self.__recv_length:
+                    if len(self.__recv_buffer) < self.__max_buffer_length:
+                        self.__recv_buffer.append(byte)
+                    else:
+                        self.__recvIdleStatus()
+                elif len(self.__recv_buffer) == self.__recv_length:
+                    if self.__checkSum(self.__recv_buffer, target=byte): # sum match
+                        package = self.removePadding(self.__recv_buffer)
+                        self.__recv_package_handler(package)
+                        self.__recvIdleStatus()
+                    else:
+                        self.__recvIdleStatus()
+                else:
+                    self.__recvIdleStatus()
+        else:
+            self.__recvIdleStatus()
+        # under all conditions
+        self.__recv_last_byte = byte
+        return
 
-        elif byte == self.__second_byte:
-            if self.__first_byte_trigger:
-                self.__second_byte_trigger = True
-                self.__first_byte_trigger = False
+    def removePadding(self, package_padded):
+        if len(package_padded) == self.__first_byte + 1:
+            package_padded = package_padded[1:]
+        package = []
+        idx = 0
+        while idx < len(package_padded):
+            byte = package_padded[idx]
+            package.append(byte)
+            if byte == self.__first_byte:
+                idx += 2
+            else:
+                idx += 1
+        return package
 
+    def __recvPackageHandler(self, package):
+        self.printAsHex(package)
 
-
-
+    # Sending
 
     def packageToFrame(self, package):
         if len(package) > self.max_package_length:
@@ -60,19 +108,10 @@ class Protocal(object):
             raise ValueError('frame is oversized')
         return frame
 
-    def removePadding(self, package_padded):
-        if len(package_padded) == self.__first_byte + 1:
-            package_padded = package_padded[1:]
-        package = []
-        idx = 0
-        while idx < len(package_padded):
-            byte = package_padded[idx]
-            package.append(byte)
-            if byte == self.__first_byte:
-                idx += 2
-            else:
-                idx += 1
-        return package
+    # Util
+
+    def __checkSum(self, recv_buffer, target):
+        return (sum(recv_buffer) + len(recv_buffer))%256 == target
 
     def isFrameLegal(self, frame):
         if len(frame) < 4:
