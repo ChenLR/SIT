@@ -16,6 +16,8 @@ class Protocal(object):
         self.__recv_buffer = []
         self.__recv_last_byte = 0x00
         self.__recv_length = 0
+        self.__recv_ignore_flag = 0
+        self.__recv_sum = 0
         return
 
     # Receiving
@@ -24,6 +26,7 @@ class Protocal(object):
         self.__recv_state = 0 # 0 is idle, 1 is waiting for length, 2 is normal receiving
         self.__recv_buffer = []
         self.__recv_length = 0
+        self.__recv_sum = 0
 
     def recvByteHandler(self, byte):
         if self.__recv_state == 0:
@@ -37,18 +40,27 @@ class Protocal(object):
             self.__recv_state = 2
             self.__recv_buffer.clear()
             self.__recv_length = byte
+            self.__recv_sum = byte
+            if byte == self.__first_byte:
+                self.__recv_ignore_flag = 1
+            else:
+                self.__recv_ignore_flag = 0
         elif self.__recv_state == 2:
             if self.__recv_last_byte == self.__first_byte and byte == self.__second_byte:
                 self.__recv_state = 1
                 self.__recv_buffer.clear()
             else:
                 if len(self.__recv_buffer) < self.__recv_length:
+                    self.__recv_sum += byte
                     if len(self.__recv_buffer) < self.__max_buffer_length:
-                        self.__recv_buffer.append(byte)
+                        if self.__recv_ignore_flag:
+                            self.__recv_ignore_flag = 0
+                        else:
+                            self.__recv_buffer.append(byte)
                     else:
                         self.__recvIdleStatus()
                 elif len(self.__recv_buffer) == self.__recv_length:
-                    if self.__checkSum(self.__recv_buffer, target=byte): # sum match
+                    if self.__recv_sum%256 == byte: # sum match
                         package = self.removePadding(self.__recv_buffer)
                         self.__recv_package_handler(package)
                         self.__recvIdleStatus()
@@ -63,8 +75,6 @@ class Protocal(object):
         return
 
     def removePadding(self, package_padded):
-        if len(package_padded) == self.__first_byte + 1:
-            package_padded = package_padded[1:]
         package = []
         idx = 0
         while idx < len(package_padded):
@@ -96,9 +106,9 @@ class Protocal(object):
                 package_padded.append(self.__pad_byte)
         # padd for the length
         if len(package_padded) == self.__first_byte:
-            package_padded = [self.__pad_byte] + package_padded
-        # add length
-        frame = [len(package_padded)] + package_padded
+            frame = [len(package_padded), self.__pad_byte] + package_padded
+        else:
+            frame = [len(package_padded)] + package_padded
         # add sum
         frame = frame + [sum(frame)%256]
         # add header
@@ -109,9 +119,6 @@ class Protocal(object):
         return frame
 
     # Util
-
-    def __checkSum(self, recv_buffer, target):
-        return (sum(recv_buffer) + len(recv_buffer))%256 == target
 
     def isFrameLegal(self, frame):
         if len(frame) < 4:
