@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "usart.h"
-#include "protocal.h"
+#include "protocol.h"
+#include "parser.h"
 
 // #pragma import(__use_no_semihosting)
 FILE __stdout;
@@ -16,6 +17,10 @@ static char buf[BUF_SIZE];
 static uint8_t USART1_STATUS = 0;
 static uint8_t USART2_STATUS = 0;
 static uint8_t USART3_STATUS = 0;
+
+static uint8_t send_package_buff[MAX_PACKAGE_LEN];
+static uint8_t send_frame_buff[MAX_FRAME_LEN];
+static uint8_t recv_package_buff[MAX_PACKAGE_LEN];
 
 // ====================== Handler =====================
 
@@ -305,7 +310,6 @@ void USART3_PutChar(char c)
 	USART_SendData(USART3, c);
 }
 
-
 void USART3_IRQHandler()
 {
 	// Check if the USART3 receive interrupt flag was set
@@ -314,7 +318,10 @@ void USART3_IRQHandler()
 		// Read received char
 		char c = USART_ReceiveData(USART3);
 		// echoHandler(c);
-		recvByteHandler(c);
+		uint8_t package_length = 0;
+		if(recvByteHandler(c, recv_package_buff, &package_length)) {
+			parsePackage(recv_package_buff, package_length);
+		}
 	}
 }
 
@@ -348,4 +355,11 @@ int fputc(int ch, FILE *f){
 int __io_putchar(int ch) {
 	putCharToPorts(ch);
 	return ch;
+}
+
+int sendPackage(uint8_t *package, uint8_t package_length) {
+	uint8_t frame_length;
+	packageToFrame(send_package_buff, package_length, send_frame_buff, &frame_length);
+
+	return 1;
 }

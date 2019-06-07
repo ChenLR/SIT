@@ -13,6 +13,9 @@
 // PB10:	SCL
 // PB11:	SDA
 extern int RECV_CNT;
+extern int dbg_line_flag;
+extern char dbg_line[];
+
 
 void deviceSetup() {
 	// wake up if pressed more than 2s
@@ -44,10 +47,11 @@ void printSensorData(float pressure, float depth, float battery) {
 	printf("pressure  %.1f\n", pressure);
 	printf("Vbatt     %.4fV\n", battery);
 	printf("received  %d\n", RECV_CNT);
+	if(dbg_line_flag) printf("package  %s\n", dbg_line);
 }
 
 void einkUserLogic(float pressure, float depth, float battery) {
-	static uint8_t welcome_flag = 1;
+	static uint8_t welcome_flag = 0;
 	if(welcome_flag) {
 		welcome_flag = 0;
 		Eink_Display_Welcome(pressure, depth, battery);
@@ -60,8 +64,8 @@ void einkUserLogic(float pressure, float depth, float battery) {
 		DrawStringAt(0, 40, line, &Font24, 1, 1);
 		sprintf(line, "Pressure  %.1f", pressure);
 		DrawStringAt(0, 70, line, &Font24, 1, 1);
-		sprintf(line, "Vbatt %.4fV", battery);
-		DrawStringAt(0, 100, line, &Font24, 1, 1);
+		//sprintf(line, "Vbatt %.4fV", battery);
+		if(dbg_line_flag)  DrawStringAt(0, 100, dbg_line, &Font8, 1, 1);
 		Eink_SetAndDisplay();
 	}
 }
