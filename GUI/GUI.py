@@ -54,14 +54,17 @@ class MainWindow(object):
 
         return menubar
 
+    def updateOpt(self, text):
+        self.opt.config(text=text)
+
     def doJobCallBack(self):
         global cnt
-        self.opt.config(text='do job {}'.format(cnt))
+        self.updateOpt('do job {}'.format(cnt))
         cnt += 1
 
     def handle_data(self, data):
         if len(data):
-            self.opt.config(text='Recv: {}'.format(data.decode()))
+            self.updateOpt(text='Recv: {}'.format(data.decode()))
 
     def onExit(self):
         self.port_manager.disconnectAllPorts()
@@ -101,13 +104,13 @@ class PortMenu(object):
         for idx, port in enumerate(self.port_manager.port_list):
             self.portmenu.add_checkbutton(label="{}".format(port.device), onvalue=1, offvalue=0, 
                     variable=self.port_manager.port_status_list[idx], command=partial(self.connectCallBack, idx))
-        self.main_window.opt.config(text='port refreshed')
+        self.main_window.updateOpt('port refreshed')
 
     # Callbacks
     def connectCallBack(self, idx):
         self.port_manager.disconnectAllPorts()
         if self.port_manager.connectPort(idx):
-            self.main_window.opt.config(text='comport {} connected'.format(idx))
+            self.main_window.updateOpt('comport {} connected'.format(idx))
 
 
 class CommandMenu(object):

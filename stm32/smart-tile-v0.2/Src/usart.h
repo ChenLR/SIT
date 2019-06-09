@@ -20,4 +20,6 @@ void USART3_PutChar(char c);
 
 int fputc(int ch, FILE *f);
 
+int sendPackage(uint8_t *package, uint8_t package_length);
+
 #endif

@@ -99,7 +99,7 @@ uint8_t packageToFrame(uint8_t *package_buff, uint8_t package_length, uint8_t *f
 	// header
 	frame_buff[0] = PROT_FIRST_BYTE;
 	frame_buff[1] = PROT_SECOND_BYTE;
-	frame_buff[2] = padd_cnt + package_length + padd_first_flag;
+	frame_buff[2] = padd_cnt + package_length;
 	sum += frame_buff[2];
 	f_idx = 3;
 	if(padd_first_flag) {
@@ -113,12 +113,12 @@ uint8_t packageToFrame(uint8_t *package_buff, uint8_t package_length, uint8_t *f
 		f_idx++;
 		if(package_buff[p_idx] == PROT_FIRST_BYTE) {
 			frame_buff[f_idx] = PROT_PADD_BYTE;
-			sum += package_buff[p_idx];
+			sum += PROT_PADD_BYTE;
 			f_idx++;
 		}
 	}
 	frame_buff[f_idx] = sum;
-	*frame_length = padd_cnt + package_length + padd_first_flag + 3;
+	*frame_length = padd_cnt + package_length + padd_first_flag + 4;
 	return 1;
 }
 

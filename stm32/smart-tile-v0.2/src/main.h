@@ -6,7 +6,7 @@
 #define PERIOD_DEPTH		10		// 1s
 #define PERIOD_BATT			10		// 1s
 #define PERIOD_PRINT_SENSOR	30		// 3s
-#define PERIOD_EINK			200		// 20s
+#define PERIOD_EINK			150		// 15s
 
 // period for overall
 #define PERIOD_OVERALL		6000 	// 600s

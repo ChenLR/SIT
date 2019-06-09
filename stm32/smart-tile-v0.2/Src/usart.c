@@ -18,7 +18,6 @@ static uint8_t USART1_STATUS = 0;
 static uint8_t USART2_STATUS = 0;
 static uint8_t USART3_STATUS = 0;
 
-static uint8_t send_package_buff[MAX_PACKAGE_LEN];
 static uint8_t send_frame_buff[MAX_FRAME_LEN];
 static uint8_t recv_package_buff[MAX_PACKAGE_LEN];
 
@@ -358,8 +357,10 @@ int __io_putchar(int ch) {
 }
 
 int sendPackage(uint8_t *package, uint8_t package_length) {
-	uint8_t frame_length;
-	packageToFrame(send_package_buff, package_length, send_frame_buff, &frame_length);
-
+	uint8_t frame_length, i;
+	packageToFrame(package, package_length, send_frame_buff, &frame_length);
+	for(i = 0; i < frame_length; i++) {
+		USART3_PutChar(send_frame_buff[i]);
+	}
 	return 1;
 }
