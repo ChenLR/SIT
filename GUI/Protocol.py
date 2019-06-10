@@ -1,5 +1,5 @@
 
-class Protocal(object):
+class Protocol(object):
     """
     0x0D 0x0A length data_0 data_1 ... sum (sum starts from length)
     """
