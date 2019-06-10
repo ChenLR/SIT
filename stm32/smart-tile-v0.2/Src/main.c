@@ -7,6 +7,7 @@
 #include "adc.h"
 #include "eink.h"
 #include "fonts.h"
+#include "rtc.h"
 
 // PA9:		Tx
 // PA10:	Rx
@@ -29,6 +30,8 @@ void deviceSetup() {
 	printf("USART1 Initialized\n");
 	USART3_Init();
 	printf("USART3 Initialized\n");
+	RTC_Init();
+	printf("RTC Initialized\n");
 	Eink_Init();
 	printf("Eink Display Initialized\n");
 	ADC1_Init();
@@ -47,6 +50,9 @@ void printSensorData(float pressure, float depth, float battery) {
 	printf("pressure  %.1f\n", pressure);
 	printf("Vbatt     %.4fV\n", battery);
 	printf("received  %d\n", RECV_CNT);
+	RTC_Get();
+	printf("Alarm Time:%d-%d-%d %d:%d:%d\n",calendar.w_year,calendar.w_month,
+	calendar.w_date,calendar.hour,calendar.min,calendar.sec);
 	if(dbg_line_flag) printf("package  %s\n", dbg_line);
 }
 
