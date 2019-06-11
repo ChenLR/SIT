@@ -99,8 +99,8 @@ int main(void)
 		if(cnt_100ms % PERIOD_EINK == PERIOD_EINK - 20) {
 			// 2s before display digits
 			// clear the screen to prevent from burning
-			Eink_ClearFrameMemory(0xFF);
-			Eink_DisplayFrame();
+			// Eink_ClearFrameMemory(0xFF);
+			// Eink_DisplayFrame();
 		}
 		if(!(cnt_100ms % PERIOD_EINK)) {
 			einkUserLogic(pressure, depth, battery);
