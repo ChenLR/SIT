@@ -8,6 +8,7 @@
 #include "eink.h"
 #include "fonts.h"
 #include "rtc.h"
+#include "power.h"
 
 // PA9:		Tx
 // PA10:	Rx
@@ -23,6 +24,7 @@ void deviceSetup() {
 	DelayInit();
 	Init_LED_Green();
 	WKUP_Init();
+	Turn_On_Sensor_Power();
 	
 	// initialize peripherals
 	USART1_Init();
@@ -43,6 +45,7 @@ void deviceSetup() {
 	
 	// register standby functions for peripherals
 	Register_Standby_Funcs(Eink_Standby);
+	Register_Standby_Funcs(Turn_Off_Sensor_Power);
 }
 
 void printSensorData(float pressure, float depth, float battery) {
