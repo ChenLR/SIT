@@ -41,7 +41,7 @@
 
 
 void ClearBuffer(void);
-void DrawStringAt(int x, int y, char* text, sFONT* font, float scale, int colored);
+void DrawStringAt(int x, int y, char* text, sFONT* font, float scale_x, float scale_y, int colored);
 
 
 void Eink_Init(void);
@@ -51,7 +51,5 @@ void Eink_DisplayFrame(void);
 void Eink_SetAndDisplay(void);
 
 void Eink_demo(void);
-void Eink_Display_Depth(float depth);
-void Eink_Display_Welcome(float pressure, float depth, float battery);
 
 #endif

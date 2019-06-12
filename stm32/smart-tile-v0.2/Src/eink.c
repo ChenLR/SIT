@@ -3,7 +3,7 @@
 #include "spi.h"
 #include "eink.h"
 #include <stdio.h>
-#include <math.h>
+
 
 // image buffer
 static uint8_t image_buff[4736]; // 128 * 296 / 8
@@ -223,7 +223,7 @@ void DrawPixel(int x, int y, int colored) {
 /**
  *  @brief: this draws a charactor on the frame buffer but not refresh
  */
-void DrawCharAt(int x, int y, char ascii_char, sFONT* font, float scale, int colored) {
+void DrawCharAt(int x, int y, char ascii_char, sFONT* font, float scale_x, float scale_y, int colored) {
     int i, j, ii, jj;
     unsigned int char_offset = (ascii_char - ' ') * font->Height * (font->Width / 8 + (font->Width % 8 ? 1 : 0));
     const uint8_t * ptr = &font->table[char_offset];
@@ -231,8 +231,8 @@ void DrawCharAt(int x, int y, char ascii_char, sFONT* font, float scale, int col
     for (j = 0; j < font->Height; j++) {
         for (i = 0; i < font->Width; i++) {
             if ( *ptr & (0x80 >> (i % 8))) {
-								for(jj = (int)(j * scale); jj < (int)((j + 1) * scale); jj++) {
-										for(ii = (int)(i * scale); ii < (int)((i + 1) * scale); ii++) {
+								for(jj = (int)(j * scale_y); jj < (int)((j + 1) * scale_y); jj++) {
+										for(ii = (int)(i * scale_x); ii < (int)((i + 1) * scale_x); ii++) {
 											  DrawPixel(x + ii, y + jj, colored);
 										}
 										
@@ -251,7 +251,7 @@ void DrawCharAt(int x, int y, char ascii_char, sFONT* font, float scale, int col
 /**
 *  @brief: this displays a string on the frame buffer but not refresh
 */
-void DrawStringAt(int x, int y, char* text, sFONT* font, float scale, int colored) {
+void DrawStringAt(int x, int y, char* text, sFONT* font, float scale_x, float scale_y, int colored) {
     const char* p_text = text;
     unsigned int counter = 0;
     int refcolumn = x;
@@ -259,9 +259,9 @@ void DrawStringAt(int x, int y, char* text, sFONT* font, float scale, int colore
     /* Send the string character by character on EPD */
     while (*p_text != 0) {
         /* Display one character on EPD */
-        DrawCharAt(refcolumn, y, *p_text, font, scale, colored);
+        DrawCharAt(refcolumn, y, *p_text, font, scale_x, scale_y, colored);
         /* Decrement the column position by 16 */
-        refcolumn += (int)(font->Width * scale);
+        refcolumn += (int)(font->Width * scale_x);
         /* Point on the next character */
         p_text++;
         counter++;
@@ -325,27 +325,8 @@ void Eink_Standby(void) {
 // 	// DisplayFrameOnly();
 // }
 // 
-void Eink_Display_Depth(float depth) {
-	char depth_str[10];
-	int dig = (int)depth;
-	int frac = (int)((fabsf(depth - dig)) * 100 + .5);
-	ClearBuffer();
-	sprintf(depth_str, "%2d.%02d", dig, frac);
-	DrawStringAt(0, 30, depth_str, &Font24, 3.5, 1);
-	Eink_SetAndDisplay();
-}
 
-void Eink_Display_Welcome(float pressure, float depth, float battery){
-	char line[30];
-	ClearBuffer();
-	
-	DrawStringAt(0, 0, "SIT  Ver 0.2", &Font24, 1.2, 1);
-	// DrawStringAt(0, 40, line1, &Font24, 1, 1);
-	// DrawStringAt(0, 70, line2, &Font24, 1, 1);
-	sprintf(line, "Vbatt %.4fV", battery);
-	DrawStringAt(0, 100, line, &Font24, 1, 1);
-	Eink_SetAndDisplay();
-}
+
 
 void Eink_SetAndDisplay() {
 	Eink_SetFrameMemory(image_buff);

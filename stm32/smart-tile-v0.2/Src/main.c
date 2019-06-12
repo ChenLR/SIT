@@ -10,6 +10,8 @@
 #include "rtc.h"
 #include "power.h"
 
+#include <math.h>
+
 // PA9:		Tx
 // PA10:	Rx
 // PB10:	SCL
@@ -44,7 +46,7 @@ void deviceSetup() {
 	printf("All Peripherals Initialized\n");
 	
 	// register standby functions for peripherals
-	Register_Standby_Funcs(Eink_Standby);
+	// Register_Standby_Funcs(Eink_Standby);
 	Register_Standby_Funcs(Turn_Off_Sensor_Power);
 }
 
@@ -59,23 +61,46 @@ void printSensorData(float pressure, float depth, float battery) {
 	if(dbg_line_flag) printf("package  %s\n", dbg_line);
 }
 
+void Eink_Display_Depth(float depth) {
+	char depth_str[10];
+	int dig = (int)depth;
+	int frac = (int)((fabsf(depth - dig)) * 100 + .5);
+	ClearBuffer();
+	sprintf(depth_str, "%2d.%02d", dig, frac);
+	DrawStringAt(0, 25, depth_str, &Font24, 3.5, 4, 1);
+	Eink_SetAndDisplay();
+}
+
+void Eink_Display_Debug(float pressure, float depth, float battery) {
+	char line[30];
+	ClearBuffer();
+	DrawStringAt(0, 0, "S.I.T.  Debug", &Font24, 1, 1.2, 1);
+	sprintf(line, "Recv %d", RECV_CNT);
+	DrawStringAt(0, 40, line, &Font24, 1, 1, 1);
+	sprintf(line, "Pressure  %.1f", pressure);
+	DrawStringAt(0, 70, line, &Font24, 1, 1, 1);
+	//sprintf(line, "Vbatt %.4fV", battery);
+	if(dbg_line_flag)  DrawStringAt(0, 100, dbg_line, &Font8, 1, 1, 1);
+	Eink_SetAndDisplay();
+}
+
 void einkUserLogic(float pressure, float depth, float battery) {
-	static uint8_t welcome_flag = 0;
+	static uint8_t welcome_flag = 1;
 	if(welcome_flag) {
+		// char line[30];
 		welcome_flag = 0;
-		Eink_Display_Welcome(pressure, depth, battery);
+		ClearBuffer();
+		DrawStringAt(0, 10, "Smart Integrated Tile", &Font24, 0.8, 1, 1);
+		DrawStringAt(0, 50, "Version 0.2", &Font24, 0.8, 0.9, 1);
+		DrawStringAt(0, 90, "12/06/2019", &Font24, 0.8, 0.9, 1);
+
+		// DrawStringAt(0, 70, line2, &Font24, 1, 1);
+		// sprintf(line, "Vbatt %.4fV", battery);
+		//DrawStringAt(0, 100, line, &Font24, 1, 1);
+		Eink_SetAndDisplay();
 	}
 	else {
-		char line[30];
-		ClearBuffer();
-		DrawStringAt(0, 0, "SIT  Debugging", &Font24, 1.2, 1);
-		sprintf(line, "Recv %d", RECV_CNT);
-		DrawStringAt(0, 40, line, &Font24, 1, 1);
-		sprintf(line, "Pressure  %.1f", pressure);
-		DrawStringAt(0, 70, line, &Font24, 1, 1);
-		//sprintf(line, "Vbatt %.4fV", battery);
-		if(dbg_line_flag)  DrawStringAt(0, 100, dbg_line, &Font8, 1, 1);
-		Eink_SetAndDisplay();
+		Eink_Display_Depth(depth);
 	}
 }
 
