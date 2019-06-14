@@ -11,7 +11,7 @@ Our project falls within the greater context of the 100 Island Challenge, headed
 A GitHub repository containing work done by a previous team on this project can be found [here](https://github.com/UCSD-E4E/coral-reef-mapping). Their work and documentation has provided us with valuable guidance for this project.
 
 # Organization
-The Artifacts folder contains non-code items such as our Project Specification and Abstract. The stm32 folder contains the code needed to make our STM32F103C8T6 MCU work with the other components we have selected.
+The Artifacts folder contains non-code items such as our Project Specification and Abstract. The stm32 folder contains the code needed to make our STM32F103C8T6 MCU work with the other components we have selected. The pcb folder includes pcb design files for our device.
 
 # Team Members
 ### CSE 145/237D
