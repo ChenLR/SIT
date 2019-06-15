@@ -1,4 +1,5 @@
-## Project
+# Smart Integrated Tile
+## Overview
 ### Abstract
 In our project we explore different hardware choices in order to develop a cheap, reliable depth sensor for Scripps Institute of Oceanography. The sensor will log and display depth readings in relatively shallow, high-illumination conditions in coral reef communities. The depth information will then be used in conjunction with photographs to create 3D models of the coral reefs. The current method for collecting this depth information is by manually measuring the depth just above the coral reefs, which is strenuous for the divers and prone to errors. We hope to provide a reliable alternative that automates this process and increases the precision of the measurements. Major design decisions include choosing a method of displaying depth (and later heading) data and how to quickly and easily transfer the collected information while maintaining the integrity of the waterproofing at an affordable cost.
 
@@ -20,13 +21,19 @@ Based on the requirements from Scripps Institution of Oceanography, we are build
 ### Previous Work
 A GitHub repository containing work done by a previous team on this project can be found [here](https://github.com/UCSD-E4E/coral-reef-mapping). Their work and documentation has provided us with valuable guidance for this project.
 
-## Organization
+***
+
+## Repo Organization
 The stm32 folder contains the code needed to make our STM32F103C8T6 MCU work with the other components we have selected. The pcb folder includes pcb hardware design files for our device.
+
+***
 
 ## Team Members
 * Liren "Tony" Chen | Hardware Assembler
 * Xuanyi "Ivy" Yu | Hardware Designer
 * Samuel Givens | Software Developer
+
+***
 
 ## Resources
 * [Project Overview](https://drive.google.com/open?id=1Pus6sJ2qkKndr-W4F6nYFhtnWSXx7cwhct0EHbMCYVM)
