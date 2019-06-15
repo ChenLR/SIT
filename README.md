@@ -22,7 +22,7 @@ Based on the requirements from Scripps Institution of Oceanography, we are build
 A GitHub repository containing work done by a previous team on this project can be found [here](https://github.com/UCSD-E4E/coral-reef-mapping). Their work and documentation has provided us with valuable guidance for this project.
 
 ## Repo Organization
-The stm32 folder contains the code needed to make our STM32F103C8T6 MCU work with the other components we have selected. The pcb folder includes pcb hardware design files for our device.
+The stm32 folder contains the code needed to make our STM32F103C8T6 MCU work with the other components we have selected. The pcb folder includes pcb hardware design files for our device. The GUI folder includes files about data transmission and user interface.
 
 ## Team Members
 * Liren "Tony" Chen
