@@ -1,6 +1,8 @@
 #ifndef __EINK_H
 #define __EINK_H
 
+#include "fonts.h"
+
 // Display resolution
 #define EPD_WIDTH       128
 #define EPD_HEIGHT      296
@@ -37,11 +39,17 @@
 // Color inverse. 1 or 0 = set or reset a bit if set a colored pixel
 #define IF_INVERT_COLOR     0
 
+
+void ClearBuffer(void);
+void DrawStringAt(int x, int y, char* text, sFONT* font, float scale_x, float scale_y, int colored);
+
+
 void Eink_Init(void);
 void Eink_Standby(void);
+void Eink_ClearFrameMemory(uint8_t color);
+void Eink_DisplayFrame(void);
+void Eink_SetAndDisplay(void);
 
 void Eink_demo(void);
-void Eink_Display_Depth(float depth);
-void Eink_Display_Welcome(char* line1, char* line2, char* line3);
 
 #endif
