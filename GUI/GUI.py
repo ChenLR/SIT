@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from PortManager import PortManager
+from Protocol import Protocol
 
 
 # list comports
